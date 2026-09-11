@@ -1,0 +1,53 @@
+<task_summary>
+    <project_info>
+        <name>Afada Medical</name>
+        <purpose>Product management application with worker tracking and sales statistics.</purpose>
+    </project_info>
+
+    <progress_status>
+        <module name="HomePage Refactoring">
+            <status>Completed</status>
+            <details>
+                Integrated dynamic statistics for daily/monthly revenue and worker management.
+                Implemented responsive charts using fl_chart.
+                Added localization support for Uzb, Rus, and Kiril languages.
+            </details>
+        </module>
+        <module name="UI Locking (Coming Soon)">
+            <status>Implemented</status>
+            <details>
+                Added a custom `_buildLockedOverlay` widget providing a dark blurred overlay with "Tez orada" (Coming soon) text.
+                Applied locking to the "Qarzdorlik" (Debt) card and the main Floating Action Button (FAB) on the HomePage.
+                Updated localization maps for all supported languages to include the "Tez orada" string.
+            </details>
+        </module>
+        <module name="Worker Management">
+            <status>In Progress</status>
+            <details>
+                Refactored `IshchiProvider` for API synchronization.
+                Cleaned up Worker management UI in `draver_ishchilar_pages.dart`.
+            </details>
+        </module>
+        <module name="Backend Integration">
+            <status>In Progress</status>
+            <details>
+                Implemented product deletion in `ApiService`.
+                Refactoring providers for full API sync.
+            </details>
+        </module>
+    </progress_status>
+
+    <file_changes>
+        <file path="lib/pages/home_pages.dart">
+            <change>Added `_buildLockedOverlay` helper method.</change>
+            <change>Applied locking overlay to FAB and Debt stat card.</change>
+            <change>Updated `_localizedTexts` with "Tez orada" translations for Uzb, Rus (Скоро), and Kiril (Тез орада).</change>
+        </file>
+    </file_changes>
+
+    <next_steps>
+        <step>Perform end-to-end testing of Products and Workers modules.</step>
+        <step>Finalize requirements for the locked "Qarzdorlik" module.</step>
+        <step>Complete backend synchronization for all providers.</step>
+    </next_steps>
+</task_summary>
