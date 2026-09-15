@@ -264,17 +264,50 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateOrder(
-      OrderModel updatedOrder,
-      ) {
+  Future<void> updateOrder(
+      OrderModel updatedOrder, {
+      int? productId,
+      String? saleType,
+      int? customerId,
+      int? referrerId,
+      double? discount,
+    }) async {
     final index = _orders.indexWhere(
           (order) => order.id == updatedOrder.id,
     );
 
     if (index != -1) {
+      final oldOrder = _orders[index];
       _orders[index] = updatedOrder;
-
       notifyListeners();
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('access_token');
+        final saleId = int.tryParse(updatedOrder.id);
+
+        if (token != null && token.isNotEmpty && saleId != null) {
+          final apiService = ApiService();
+          await apiService.updateSale(
+            token: token,
+            id: saleId,
+            productId: productId ?? 1,
+            saleType: saleType ?? (customerId != null ? 'shifokor' : 'patient'),
+            quantity: updatedOrder.quantity,
+            paid: updatedOrder.amountPaid,
+            customerId: customerId,
+            referrerId: referrerId,
+            phoneNumber: updatedOrder.phone,
+            discount: discount,
+          );
+        }
+      } catch (e) {
+        debugPrint("Error updating order via API: $e");
+        // Rollback on error to ensure local list matches remote
+        _orders[index] = oldOrder;
+        notifyListeners();
+        rethrow;
+      }
     }
   }
 

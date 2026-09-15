@@ -638,6 +638,66 @@ class ApiService {
   }
 
   // =========================================================
+  // SOTUVNI TAHRIRLASH
+  // PUT /api/sales/:id
+  // =========================================================
+
+  Future<Map<String, dynamic>> updateSale({
+    required String token,
+    required int id,
+    required int productId,
+    required String saleType,
+    required int quantity,
+    required double paid,
+    int? customerId,
+    int? referrerId,
+    String? phoneNumber,
+    double? discount,
+  }) async {
+    final body = <String, dynamic>{
+      'productId': productId,
+      'saleType': saleType,
+      'quantity': quantity,
+      'paid': paid,
+    };
+
+    if (customerId != null) {
+      body['customerId'] = customerId;
+    }
+
+    if (referrerId != null) {
+      body['referrerId'] = referrerId;
+    }
+
+    if (phoneNumber != null) {
+      body['phone_number'] = phoneNumber;
+    }
+
+    if (discount != null) {
+      body['discount'] = discount;
+    }
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/sales/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode >= 200 &&
+        response.statusCode < 300) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    final errorData = jsonDecode(response.body);
+    throw Exception(
+      errorData['message'] ?? 'Sotuvni yangilashda xatolik yuz berdi',
+    );
+  }
+
+  // =========================================================
   // FOYDALANUVCHILARNI OLISH
   // GET /api/users
   // =========================================================

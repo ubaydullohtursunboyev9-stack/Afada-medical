@@ -2884,7 +2884,36 @@ class HomePages extends StatelessWidget {
                                 ),
                               );
                             } else {
-                              orderProvider.updateOrder(updatedOrder);
+                              final matchedProduct = mahsulotProvider.mahsulotlar.firstWhere(
+                                (m) => m.nomi.toLowerCase() == productName.toLowerCase(),
+                                orElse: () => product,
+                              );
+                              final matchedClient = mijozProvider.mijozlar.firstWhere(
+                                (m) => "${m.ism} ${m.familya}".toLowerCase() == customerController.text.toLowerCase(),
+                                orElse: () => MijozModel(ism: "", telefon: "", ishJoyi: ""),
+                              );
+
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) => const Center(child: CircularProgressIndicator()),
+                              );
+
+                              orderProvider.updateOrder(
+                                updatedOrder,
+                                productId: matchedProduct.id,
+                                customerId: matchedClient.id,
+                                saleType: matchedClient.mijozTuri == "Korporativ" ? "shifokor" : "patient",
+                              ).then((_) {
+                                Navigator.pop(context); // close loader
+                                Navigator.pop(context); // close dialog
+                              }).catchError((error) {
+                                Navigator.pop(context); // close loader
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Xatolik yuz berdi: $error")),
+                                );
+                              });
+                              return;
                             }
 
                             Navigator.pop(context);

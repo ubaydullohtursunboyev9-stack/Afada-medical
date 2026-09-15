@@ -407,7 +407,7 @@ class OylikDaromadPages extends StatelessWidget {
                             itemCount: monthlyOrders.length,
                             itemBuilder: (context, index) {
                               final order = monthlyOrders[index];
-                              return _buildOrderCard(context, order, orderProvider, lang);
+                              return _buildOrderCard(context, order, lang);
                             },
                           ),
                         const SizedBox(height: 100),
@@ -425,7 +425,7 @@ class OylikDaromadPages extends StatelessWidget {
   }
 
   Widget _buildOrderCard(
-      BuildContext context, OrderModel order, OrderProvider provider, String lang) {
+      BuildContext context, OrderModel order, String lang) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       color: isDark ? const Color(0xFF252836) : null,
@@ -556,68 +556,8 @@ class OylikDaromadPages extends StatelessWidget {
                 ),)
               ],
             ),
-            SizedBox(
-              width: double.infinity,
-              height: 40,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    foregroundColor: isDark ? Colors.white : Theme.of(context).colorScheme.onPrimaryContainer,
-                    backgroundColor: isDark ? const Color(0xFF3A3F4B) : Theme.of(context).colorScheme.primaryContainer,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                onPressed: () => _showStatusDialog(context, order, provider),
-                child: Text(
-                  getTxt(lang, "tahrirlash"),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            )
           ],
         ),
-      ),
-    );
-  }
-
-  void _showStatusDialog(
-      BuildContext context, OrderModel order, OrderProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) => Consumer<ProfileProvider>(
-        builder: (context, profileProvider, child) {
-          final String lang = profileProvider.language;
-          final bool isDark = Theme.of(context).brightness == Brightness.dark;
-          return AlertDialog(
-            backgroundColor: isDark ? const Color(0xFF252836) : null,
-            surfaceTintColor: Colors.transparent,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text(
-              getTxt(lang, "buyurtma_holati"),
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
-            ),
-            content: Text(
-              getTxt(lang, "sotilgan_belgilash"),
-              style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  getTxt(lang, "bekor_qilish"),
-                  style: TextStyle(color: isDark ? Colors.white70 : null),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  provider.updateOrderStatus(order.id, "Sotildi");
-                  Navigator.pop(context);
-                },
-                child: Text(getTxt(lang, "sotildi_btn")),
-              ),
-            ],
-          );
-        },
       ),
     );
   }

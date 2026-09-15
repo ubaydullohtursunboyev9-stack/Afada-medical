@@ -8,6 +8,7 @@ import 'package:afada/model/ishchi_modeli.dart';
 import 'package:afada/provider/ishchilar_Provider/ishchilar_provider.dart';
 import 'package:afada/provider/profile_provider.dart';
 import 'package:afada/provider/finished_product_provider.dart';
+import 'package:afada/provider/order_provider.dart';
 
 class IshchilarOylikDaromadPagees extends StatefulWidget {
   const IshchilarOylikDaromadPagees({super.key});
@@ -26,6 +27,7 @@ class _IshchilarOylikDaromadPageesState
       "texnik_xodimlar": "Texnik xodimlar:",
       "shifokorlar": "Shifokorlar:",
       "tayyorlagan": "Tayyorlagan:",
+      "sotildi": "Sotildi:",
       "ta": "ta",
       "tel": "Tel:",
     },
@@ -35,6 +37,7 @@ class _IshchilarOylikDaromadPageesState
       "texnik_xodimlar": "Технический персонал:",
       "shifokorlar": "Врачи:",
       "tayyorlagan": "Подготовил:",
+      "sotildi": "Продано:",
       "ta": "шт",
       "tel": "Тел:",
     },
@@ -44,6 +47,7 @@ class _IshchilarOylikDaromadPageesState
       "texnik_xodimlar": "Техник ходимлар:",
       "shifokorlar": "Шифокорлар:",
       "tayyorlagan": "Тайёрлаган:",
+      "sotildi": "Сотилди:",
       "ta": "та",
       "tel": "Тел:",
     },
@@ -63,6 +67,10 @@ class _IshchilarOylikDaromadPageesState
       context
           .read<FinishedProductProvider>()
           .fetchFinishedProducts();
+
+      context
+          .read<OrderProvider>()
+          .fetchSalesFromApi();
     });
   }
 
@@ -116,6 +124,8 @@ class _IshchilarOylikDaromadPageesState
 
     final finishedProvider =
     context.watch<FinishedProductProvider>();
+
+    final orderProvider = context.watch<OrderProvider>();
 
     final lang = profile.language;
 
@@ -193,6 +203,13 @@ class _IshchilarOylikDaromadPageesState
     }).toList();
 
     /*
+     * FAQAT SHU OYDA SOTILGAN MAHSULOTLAR
+     */
+    final monthlySales = orderProvider.orders.where((o) {
+      return o.date.year == now.year && o.date.month == now.month;
+    }).toList();
+
+    /*
      * SHU OYDA BARCHA ISHCHILAR QO'SHGAN
      * MAHSULOTLARNING UMUMIY SONI
      */
@@ -261,6 +278,15 @@ class _IshchilarOylikDaromadPageesState
       }
 
       return 0;
+    }
+
+    int getSoldCountForWorker(IshchiModel ishchi) {
+      return monthlySales.where((o) {
+        final String? createdByName = o.createdBy != null
+            ? (o.createdBy!["fullName"] ?? o.createdBy!["full_name"] ?? "").toString()
+            : null;
+        return _isSameWorker(ishchi, createdByName);
+      }).fold<int>(0, (sum, item) => sum + item.quantity);
     }
 
     return Scaffold(
@@ -529,12 +555,18 @@ class _IshchilarOylikDaromadPageesState
 
                     /*
                      * SHU ISHCHI SHU OYDA
-                     * QANCHA MAHSULOT QO'SHGAN
+                     * QANCHA MAHSULOT QO'SHGAN yoki SOTGAN
                      */
-                    final productCount =
-                    getProductCountForWorker(
-                      ishchi,
-                    );
+                    final bool isSeller =
+                        ishchi.kasb.trim().toLowerCase() == "sotuvchi" ||
+                        ishchi.lavozim.trim().toLowerCase() == "sotuvchi" ||
+                        ishchi.kasb.trim().toLowerCase() == "seller";
+
+                    final countValue = isSeller
+                        ? getSoldCountForWorker(ishchi)
+                        : getProductCountForWorker(ishchi);
+
+                    final titleKey = isSeller ? "sotildi" : "tayyorlagan";
 
                     return Card(
                       clipBehavior:
@@ -672,7 +704,7 @@ class _IshchilarOylikDaromadPageesState
                                     ),
 
                                     /*
-                                     * TAYYORLAGAN
+                                     * TAYYORLAGAN VA SOTILDI
                                      */
                                     Row(
                                       children: [
@@ -688,7 +720,7 @@ class _IshchilarOylikDaromadPageesState
                                             Text(
                                               getTxt(
                                                 lang,
-                                                "tayyorlagan",
+                                                titleKey,
                                               ),
                                               softWrap:
                                               false,
@@ -716,7 +748,7 @@ class _IshchilarOylikDaromadPageesState
                                               .scaleDown,
                                           child:
                                           Text(
-                                            "$productCount ${getTxt(lang, "ta")}",
+                                            "$countValue ${getTxt(lang, "ta")}",
                                             softWrap:
                                             false,
                                             style:

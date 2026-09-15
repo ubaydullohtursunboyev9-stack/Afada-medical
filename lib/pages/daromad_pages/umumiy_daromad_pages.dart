@@ -270,7 +270,6 @@ class UmumiyDaromadPages extends StatelessWidget {
                     return _buildOrderCard(
                       context,
                       order,
-                      orderProvider,
                       lang,
                     );
                   },
@@ -450,7 +449,6 @@ class UmumiyDaromadPages extends StatelessWidget {
   Widget _buildOrderCard(
       BuildContext context,
       OrderModel order,
-      OrderProvider provider,
       String lang,
       ) {
     final bool isDark =
@@ -638,51 +636,6 @@ class UmumiyDaromadPages extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 5,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 40,
-                child: ElevatedButton(
-                  style:
-                  ElevatedButton.styleFrom(
-                    foregroundColor: isDark
-                        ? Colors.white
-                        : Colors.indigo,
-                    backgroundColor: isDark
-                        ? const Color(0xFF3A3F4B)
-                        : Colors.green.shade200,
-                    elevation: 0,
-                    shape:
-                    RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () =>
-                      _showStatusDialog(
-                        context,
-                        order,
-                        provider,
-                      ),
-                  child: Text(
-                    getTxt(
-                      lang,
-                      "tahrirlash",
-                    ),
-                    style: const TextStyle(
-                      fontWeight:
-                      FontWeight.bold,
-                    ),
-                  ),
-                ),
               ),
             ),
           ],

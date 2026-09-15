@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:afada/model/ishchi_modeli.dart';
 import 'package:afada/provider/finished_product_provider.dart';
+import 'package:afada/provider/order_provider.dart';
 import 'package:afada/provider/profile_provider.dart';
 import 'package:afada/provider/ishchilar_Provider/ishchilar_provider.dart';
 
@@ -27,6 +28,7 @@ class _KunlikDaromadPagesState
       "texnik_xodimlar": "Texnik xodimlar:",
       "shifokorlar": "Shifokorlar:",
       "tayyorlagan": "Tayyorlagan:",
+      "sotildi": "Sotildi:",
       "ta": "ta",
       "tel": "Tel:",
     },
@@ -36,6 +38,7 @@ class _KunlikDaromadPagesState
       "texnik_xodimlar": "Технический персонал:",
       "shifokorlar": "Врачи:",
       "tayyorlagan": "Подготовил:",
+      "sotildi": "Продано:",
       "ta": "шт",
       "tel": "Тел:",
     },
@@ -45,6 +48,7 @@ class _KunlikDaromadPagesState
       "texnik_xodимlar": "Техник ходимлар:",
       "shifokorlar": "Шифокорлар:",
       "tayyorlagan": "Тайёрлаган:",
+      "sotildi": "Сотилди:",
       "ta": "та",
       "tel": "Тел:",
     },
@@ -67,6 +71,8 @@ class _KunlikDaromadPagesState
       context
           .read<FinishedProductProvider>()
           .fetchFinishedProducts();
+
+      context.read<OrderProvider>().fetchSalesFromApi();
     });
   }
 
@@ -151,6 +157,9 @@ class _KunlikDaromadPagesState
     final finishedProvider =
     context.watch<FinishedProductProvider>();
 
+    final orderProvider =
+    context.watch<OrderProvider>();
+
     final lang = profile.language;
 
     final bool isDark =
@@ -229,6 +238,13 @@ class _KunlikDaromadPagesState
           date.day == now.day;
     }).toList();
 
+    final todaySales = orderProvider.orders
+        .where((o) =>
+            o.date.year == now.year &&
+            o.date.month == now.month &&
+            o.date.day == now.day)
+        .toList();
+
     /*
      * ADMIN UCHUN:
      *
@@ -295,6 +311,24 @@ class _KunlikDaromadPagesState
       }
 
       return 0;
+    }
+
+    int getSoldCountForWorker(
+        IshchiModel ishchi,
+        ) {
+      return todaySales
+          .where(
+            (o) {
+              final String? createdByName = o.createdBy != null
+                  ? (o.createdBy!["fullName"] ?? o.createdBy!["full_name"] ?? "").toString()
+                  : null;
+              return _isSameWorker(ishchi, createdByName);
+            },
+          )
+          .fold<int>(
+        0,
+            (sum, item) => sum + item.quantity,
+      );
     }
 
     return Scaffold(
@@ -480,12 +514,19 @@ class _KunlikDaromadPagesState
 
                     /*
                      * AYNAN SHU ISHCHI BUGUN
-                     * NECHTA MAHSULOT QO'SHGAN?
+                     * NECHTA MAHSULOT QO'SHGAN YOKI SOTGAN?
                      */
-                    final productCount =
-                    getProductCountForWorker(
-                      ishchi,
-                    );
+                    final bool isSotuvchi =
+                        ishchi.kasb.trim().toLowerCase() == "sotuvchi" ||
+                            ishchi.lavozim.trim().toLowerCase() == "sotuvchi";
+
+                    final int displayCount = isSotuvchi
+                        ? getSoldCountForWorker(ishchi)
+                        : getProductCountForWorker(ishchi);
+
+                    final String displayLabel = isSotuvchi
+                        ? getTxt(lang, "sotildi")
+                        : getTxt(lang, "tayyorlagan");
 
                     return Card(
                       elevation: 4,
@@ -615,15 +656,12 @@ class _KunlikDaromadPagesState
                                     ),
 
                                     /*
-                                     * TAYYORLAGAN
+                                     * TAYYORLAGAN YOKI SOTILDI
                                      */
                                     Row(
                                       children: [
                                         Text(
-                                          getTxt(
-                                            lang,
-                                            "tayyorlagan",
-                                          ),
+                                          displayLabel,
                                           style:
                                           TextStyle(
                                             fontWeight:
@@ -643,7 +681,7 @@ class _KunlikDaromadPagesState
                                         Flexible(
                                           child:
                                           Text(
-                                            "$productCount ${getTxt(lang, "ta")}",
+                                            "$displayCount ${getTxt(lang, "ta")}",
                                             overflow:
                                             TextOverflow
                                                 .ellipsis,

@@ -48,6 +48,8 @@ class DraverSotuvBolimi extends StatefulWidget {
       "bekor_qilish": "Bekor qilish",
       "saqlash": "Saqlash",
       "muvaffaqiyat": "Sotuv muvaffaqiyatli amalga oshirildi!",
+      "o'chirildi": "Muvaffaqiyatli o'chirildi",
+      "xatolik": "Xatolik yuz berdi",
       "barcha_maydonlar": "Barcha maydonlarni to'ldiring!",
       "dona": "dona",
       "mavjud": "Mavjud",
@@ -84,6 +86,8 @@ class DraverSotuvBolimi extends StatefulWidget {
       "bekor_qilish": "Отмена",
       "saqlash": "Сохранить",
       "muvaffaqiyat": "Продажа успешно завершена!",
+      "o'chirildi": "Успешно удалено",
+      "xatolik": "Произошла ошибка",
       "barcha_maydonlar": "Заполните все поля!",
       "dona": "шт",
       "mavjud": "В наличии",
@@ -120,6 +124,8 @@ class DraverSotuvBolimi extends StatefulWidget {
       "bekor_qilish": "Бекор қилиш",
       "saqlash": "Сақлаш",
       "muvaffaqiyat": "Сотув муваффақиятли амалга оширилди!",
+      "o'chirildi": "Муваффақиятли ўчирилди",
+      "xatolik": "Хатолик юз берди",
       "barcha_maydonlar": "Барча майдонларни тўлдиринг!",
       "dona": "дона",
       "mavjud": "Мавжуд",
@@ -323,6 +329,7 @@ class _DraverSotuvBolimiState extends State<DraverSotuvBolimi> {
   }
 
   void _confirmDelete(BuildContext context, int id) {
+    final lang = context.read<ProfileProvider>().language;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -336,15 +343,30 @@ class _DraverSotuvBolimiState extends State<DraverSotuvBolimi> {
               final messenger = ScaffoldMessenger.of(context);
               nav.pop();
               try {
+                // Avval sotuvni o'chiramiz
                 await context.read<SaleProvider>().deleteSale(id);
-                await context.read<OrderProvider>().fetchSalesFromApi();
-                if (context.mounted) {
-                  await context.read<MahsulotProvider>().loadProducts();
-                  await context.read<FinishedProductProvider>().fetchFinishedProducts();
+                
+                // Muvaffaqiyatli o'chgan bo'lsa, darhol xabarni ko'rsatamiz
+                messenger.showSnackBar(SnackBar(
+                  content: Text(DraverSotuvBolimi.getTxt(lang, "o'chirildi")),
+                  backgroundColor: Colors.green
+                ));
+
+                // Keyin ma'lumotlarni fonda yangilaymiz (xato bo'lsa ham foydalanuvchiga xunuk ko'rinmaydi)
+                try {
+                  await context.read<OrderProvider>().fetchSalesFromApi();
+                  if (context.mounted) {
+                    await context.read<MahsulotProvider>().loadProducts();
+                    await context.read<FinishedProductProvider>().fetchFinishedProducts();
+                  }
+                } catch (e) {
+                  debugPrint("Refresh error: $e");
                 }
-                messenger.showSnackBar(const SnackBar(content: Text("Sotuv o'chirildi"), backgroundColor: Colors.green));
               } catch (e) {
-                messenger.showSnackBar(SnackBar(content: Text("Xatolik: $e"), backgroundColor: Colors.red));
+                messenger.showSnackBar(SnackBar(
+                  content: Text(DraverSotuvBolimi.getTxt(lang, "xatolik")), 
+                  backgroundColor: Colors.red
+                ));
               }
             },
             child: const Text("O'chirish", style: TextStyle(color: Colors.red)),
@@ -1349,7 +1371,7 @@ class _DraverSotuvBolimiState extends State<DraverSotuvBolimi> {
                           ).showSnackBar(
                             SnackBar(
                               content: Text(
-                                "Xatolik: $e",
+                                DraverSotuvBolimi.getTxt(lang, "xatolik"),
                               ),
                               backgroundColor:
                               Colors.red,

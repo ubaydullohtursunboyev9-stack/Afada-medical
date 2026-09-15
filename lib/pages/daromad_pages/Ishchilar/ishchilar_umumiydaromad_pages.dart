@@ -8,6 +8,7 @@ import 'package:afada/model/ishchi_modeli.dart';
 import 'package:afada/provider/ishchilar_Provider/ishchilar_provider.dart';
 import 'package:afada/provider/profile_provider.dart';
 import 'package:afada/provider/finished_product_provider.dart';
+import 'package:afada/provider/order_provider.dart';
 
 
 class IshchilarUmumiydaromadPages extends StatefulWidget {
@@ -30,6 +31,7 @@ class _IshchilarUmumiydaromadPagesState
       "oxirgi_3_oylik": "Oxirgi 3 oylik",
       "oxirgi_6_oylik": "Oxirgi 6 oylik",
       "tayyorlagan": "Tayyorlagan:",
+      "sotildi": "Sotildi:",
       "ta": "ta",
       "tel": "Tel:",
     },
@@ -42,6 +44,7 @@ class _IshchilarUmumiydaromadPagesState
       "oxirgi_3_oylik": "За последние 3 месяца",
       "oxirgi_6_oylik": "За последние 6 месяцев",
       "tayyorlagan": "Подготовил:",
+      "sotildi": "Продано:",
       "ta": "шт",
       "tel": "Тел:",
     },
@@ -54,6 +57,7 @@ class _IshchilarUmumiydaromadPagesState
       "oxirgi_3_oylik": "Охирги 3 ойлик",
       "oxirgi_6_oylik": "Охирги 6 ойлик",
       "tayyorlagan": "Тайёрлаган:",
+      "sotildi": "Сотилди:",
       "ta": "та",
       "tel": "Тел:",
     },
@@ -73,6 +77,7 @@ class _IshchilarUmumiydaromadPagesState
       context
           .read<FinishedProductProvider>()
           .fetchFinishedProducts();
+      context.read<OrderProvider>().fetchSalesFromApi();
     });
   }
 
@@ -98,6 +103,15 @@ class _IshchilarUmumiydaromadPagesState
         .toLowerCase()
         .replaceAll(RegExp(r'\s+'), '')
         .trim();
+  }
+
+  bool _isSeller(IshchiModel ishchi) {
+    final role = ishchi.kasb.toLowerCase();
+    final position = ishchi.lavozim.toLowerCase();
+    return role.contains("sotuvchi") ||
+        role.contains("seller") ||
+        position.contains("sotuvchi") ||
+        position.contains("seller");
   }
 
   bool _isSameWorker(
@@ -126,6 +140,8 @@ class _IshchilarUmumiydaromadPagesState
 
     final finishedProvider =
     context.watch<FinishedProductProvider>();
+
+    final orderProvider = context.watch<OrderProvider>();
 
     final davrProvider =
     context.watch<DavrProvider>();
@@ -250,6 +266,34 @@ class _IshchilarUmumiydaromadPagesState
       return true;
     }).toList();
 
+    final filteredOrders = orderProvider.orders.where((o) {
+      final date = o.date;
+
+      if (davr == "Umumiy") {
+        return true;
+      }
+
+      if (davr == "Oxirgi 3 oylik") {
+        final threeMonthsAgo = DateTime(
+          now.year,
+          now.month - 3,
+          now.day,
+        );
+        return !date.isBefore(threeMonthsAgo);
+      }
+
+      if (davr == "Oxirgi 6 oylik") {
+        final sixMonthsAgo = DateTime(
+          now.year,
+          now.month - 6,
+          now.day,
+        );
+        return !date.isBefore(sixMonthsAgo);
+      }
+
+      return true;
+    }).toList();
+
     /*
      * UMUMIY MAHSULOTLAR SONI
      */
@@ -317,14 +361,52 @@ class _IshchilarUmumiydaromadPagesState
       return 0;
     }
 
+    int getSoldCountForWorker(IshchiModel ishchi) {
+      final hasCreatorData = filteredOrders.any((o) {
+        final cb = o.createdBy;
+        if (cb != null) {
+          final fn = cb['fullName'] ?? cb['full_name'];
+          return fn != null && fn.toString().trim().isNotEmpty;
+        }
+        return false;
+      });
+
+      if (hasCreatorData) {
+        return filteredOrders.where((o) {
+          final cb = o.createdBy;
+          if (cb != null) {
+            final fn = cb['fullName'] ?? cb['full_name'];
+            if (fn != null) {
+              return _isSameWorker(ishchi, fn.toString());
+            }
+          }
+          return false;
+        }).fold<int>(0, (sum, o) => sum + o.quantity);
+      }
+
+      final currentWorker = _normalizeName("${profile.surname} ${profile.name}");
+      final thisWorker = _normalizeName("${ishchi.familya} ${ishchi.ism}");
+
+      if (currentWorker == thisWorker) {
+        return filteredOrders.fold<int>(
+          0,
+          (sum, o) => sum + o.quantity,
+        );
+      }
+
+      return 0;
+    }
+
     return Scaffold(
       backgroundColor: isDark
           ? const Color(0xFF181A20)
           : Colors.blue.shade100,
       body: RefreshIndicator(
         onRefresh: () async {
-          await finishedProvider
-              .fetchFinishedProducts();
+          await Future.wait([
+            finishedProvider.fetchFinishedProducts(),
+            orderProvider.fetchSalesFromApi(),
+          ]);
         },
         child: SingleChildScrollView(
           physics:
@@ -749,12 +831,14 @@ class _IshchilarUmumiydaromadPagesState
                     /*
                      * TANLANGAN DAVRDA
                      * SHU ISHCHI QANCHA
-                     * MAHSULOT QO'SHGAN
+                     * MAHSULOT QO'SHGAN / SOTGAN
                      */
-                    final productCount =
-                    getProductCountForWorker(
-                      ishchi,
-                    );
+                    final isSeller = _isSeller(ishchi);
+                    final productCount = isSeller
+                        ? getSoldCountForWorker(ishchi)
+                        : getProductCountForWorker(
+                            ishchi,
+                          );
 
                     return Card(
                       clipBehavior:
@@ -909,7 +993,9 @@ class _IshchilarUmumiydaromadPagesState
                                             Text(
                                               getTxt(
                                                 lang,
-                                                "tayyorlagan",
+                                                isSeller
+                                                    ? "sotildi"
+                                                    : "tayyorlagan",
                                               ),
                                               softWrap:
                                               false,
