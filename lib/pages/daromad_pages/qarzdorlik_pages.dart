@@ -37,7 +37,7 @@ class QarzdorlikPages extends StatelessWidget {
       "qarz": "Qarz:",
     },
     "Rus": {
-      "valyuta": "сум",
+      "valyuta": "UZS",
       "yopish": "Закрыть",
       "qarz_amaliyoti": "Долговая операция",
       "mijoz_ismi": "Имя клиента",
@@ -63,7 +63,7 @@ class QarzdorlikPages extends StatelessWidget {
       "qarz": "Долг:",
     },
     "Kiril": {
-      "valyuta": "сўм",
+      "valyuta": "UZS",
       "yopish": "Ёпиш",
       "qarz_amaliyoti": "Қарз амалиёти",
       "mijoz_ismi": "Мижоз исми",

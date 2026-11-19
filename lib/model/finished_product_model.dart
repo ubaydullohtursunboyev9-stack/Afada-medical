@@ -65,12 +65,20 @@ class FinishedProductModel {
           : null,
 
       createdByName: createdBy != null
-          ? createdBy['fullName']?.toString()
-          : null,
+          ? (createdBy['fullName'] ??
+             createdBy['full_name'] ??
+             createdBy['name'] ??
+             createdBy['username'] ??
+             createdBy['login'] ??
+             createdBy['displayName'])?.toString()
+          : (json['createdByName'] ??
+             json['created_by_name'] ??
+             json['createdByName'] ??
+             json['created_by_user'])?.toString(),
 
       createdByRole: createdBy != null
-          ? createdBy['role']?.toString()
-          : null,
+          ? (createdBy['role'] ?? createdBy['user_role'])?.toString()
+          : (json['createdByRole'] ?? json['created_by_role'])?.toString(),
     );
   }
 

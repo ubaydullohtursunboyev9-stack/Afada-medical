@@ -1,15 +1,34 @@
-import 'package:afada/pages/daromad_pages/umumiy_daromad_pages.dart';
-import 'package:afada/provider/profile_provider.dart';
-import 'package:afada/model/model_provider.dart';
-import 'package:afada/model/mahsulot_modeli.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../provider/order_provider.dart';
-import '../../model/order_model.dart';
-import 'package:intl/intl.dart';
 import 'dart:io';
 
-class OylikDaromadPages extends StatelessWidget {
+import 'package:afada/model/mahsulot_modeli.dart';
+import 'package:afada/model/model_provider.dart';
+import 'package:afada/pages/daromad_pages/umumiy_daromad_pages.dart';
+import 'package:afada/provider/profile_provider.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../../model/order_model.dart';
+import '../../provider/order_provider.dart';
+
+// ============================================================
+// CLINICAL COLORS (Boshqa sahifalar bilan bir xil rang tizimi)
+// ============================================================
+class _OylikColors {
+  static const Color primaryBlue = Color(0xFF0284C7);
+  static const Color skyBlue = Color(0xFF38BDF8);
+  static const Color green = Color(0xFF10B981);
+  static const Color amber = Color(0xFFF59E0B);
+  static const Color slateDark = Color(0xFF0B132B);
+  static const Color cardDark = Color(0xFF1C2541);
+  static const Color lightBg = Color(0xFFF8FAFC);
+}
+
+enum _OylikFilter { all, paid, pending }
+
+class OylikDaromadPages extends StatefulWidget {
   const OylikDaromadPages({super.key});
 
   static final Map<String, Map<String, String>> _localizedTexts = {
@@ -44,6 +63,12 @@ class OylikDaromadPages extends StatelessWidget {
       "sotildi_btn": "Sotildi",
       "jami": "Jami:",
       "valyuta": "UZS",
+      "barchasi": "Barchasi",
+      "oylik_trend": "Kunlik daromad dinamikasi",
+      "tolov_taqsimoti": "Oylik to'lov holati",
+      "qidirish": "Mahsulot yoki mijoz bo'yicha qidirish...",
+      "natija_topilmadi": "Qidiruv bo'yicha buyurtma topilmadi",
+      "filtrni_tozalash": "Filtrni tozalash",
       "Yanvar": "Yanvar",
       "Fevral": "Fevral",
       "Mart": "Mart",
@@ -87,7 +112,13 @@ class OylikDaromadPages extends StatelessWidget {
       "bekor_qilish": "Отмена",
       "sotildi_btn": "Продано",
       "jami": "Итого:",
-      "valyuta": "сум",
+      "valyuta": "UZS",
+      "barchasi": "Все",
+      "oylik_trend": "Динамика по дням месяца",
+      "tolov_taqsimoti": "Статус оплат за месяц",
+      "qidirish": "Поиск по товару или клиенту...",
+      "natija_topilmadi": "Заказы не найдены",
+      "filtrni_tozalash": "Сбросить фильтр",
       "Yanvar": "Январь",
       "Fevral": "Февраль",
       "Mart": "Март",
@@ -131,7 +162,13 @@ class OylikDaromadPages extends StatelessWidget {
       "bekor_qilish": "Бекор қилиш",
       "sotildi_btn": "Сотилди",
       "jami": "Жами:",
-      "valyuta": "сўм",
+      "valyuta": "UZS",
+      "barchasi": "Барчаси",
+      "oylik_trend": "Кунлик даромад динамикаси",
+      "tolov_taqsimoti": "Ойлик тўлов ҳолати",
+      "qidirish": "Маҳсулот ёки мижоз бўйича қидириш...",
+      "natija_topilmadi": "Қидирув бўйича буюртма топилмади",
+      "filtrni_tozalash": "Филтрни тозалаш",
       "Yanvar": "Январ",
       "Fevral": "Феврал",
       "Mart": "Март",
@@ -148,10 +185,19 @@ class OylikDaromadPages extends StatelessWidget {
   };
 
   static String getTxt(String lang, String key) {
-    return _localizedTexts[lang]?[key] ?? key;
+    return _localizedTexts[lang]?[key] ?? _localizedTexts["Uzb"]?[key] ?? key;
   }
 
-  final List<String> oylar = const [
+  @override
+  State<OylikDaromadPages> createState() => _OylikDaromadPagesState();
+}
+
+class _OylikDaromadPagesState extends State<OylikDaromadPages> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+  _OylikFilter _activeFilter = _OylikFilter.all;
+
+  static const List<String> oylar = [
     '',
     'Yanvar',
     'Fevral',
@@ -167,6 +213,12 @@ class OylikDaromadPages extends StatelessWidget {
     'Dekabr',
   ];
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   String _formatMoney(double amount) {
     return NumberFormat('#,###').format(amount).replaceAll(',', ' ');
   }
@@ -174,6 +226,7 @@ class OylikDaromadPages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return DefaultTabController(
       length: 2,
       child: Consumer<ProfileProvider>(
@@ -181,52 +234,91 @@ class OylikDaromadPages extends StatelessWidget {
           final String lang = profileProvider.language;
 
           return Scaffold(
-            backgroundColor: isDark ? const Color(0xFF181A20) : Theme.of(context).scaffoldBackgroundColor,
+            backgroundColor:
+            isDark ? _OylikColors.slateDark : _OylikColors.lightBg,
             appBar: AppBar(
-              backgroundColor: isDark ? const Color(0xFF181A20) : null,
               elevation: 0,
-              foregroundColor: Colors.white,
+              scrolledUnderElevation: 0,
+              backgroundColor: Colors.transparent,
+              systemOverlayStyle: isDark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark,
+              iconTheme: IconThemeData(
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
               title: Text(
-                getTxt(lang, "daromadlar"),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                  color: Colors.white,
+                OylikDaromadPages.getTxt(lang, "daromadlar"),
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 22,
+                  letterSpacing: -0.5,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(30),
-                child: Container(
-                  height: 30,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2A2E38) : Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF3A3F4B) : Colors.white.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: TabBar(
-                    indicatorPadding:
-                        const EdgeInsets.symmetric(horizontal: -10, vertical: 2),
-                    dividerColor: Colors.transparent,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.white70,
-                    indicator: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: const Color(0xFF3C8DFF).withValues(alpha: isDark ? 0.3 : 0.8),
+                preferredSize: const Size.fromHeight(54),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
+                  child: Container(
+                    height: 44,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? _OylikColors.cardDark
+                          : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(
-                        color: isDark ? const Color(0xFF3C8DFF) : Colors.white.withValues(alpha: 0.4),
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
                       ),
                     ),
-                    tabs: [
-                      Tab(text: getTxt(lang, "oylik_daromad")),
-                      Tab(text: getTxt(lang, "umumiy_daromad")),
-                    ],
+                    child: TabBar(
+                      dividerColor: Colors.transparent,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: isDark
+                          ? Colors.white60
+                          : const Color(0xFF475569),
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13.5,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                      ),
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        color: _OylikColors.primaryBlue,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _OylikColors.primaryBlue
+                                .withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      tabs: [
+                        Tab(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              OylikDaromadPages.getTxt(lang, "oylik_daromad"),
+                            ),
+                          ),
+                        ),
+                        Tab(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              OylikDaromadPages.getTxt(lang, "umumiy_daromad"),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -234,188 +326,233 @@ class OylikDaromadPages extends StatelessWidget {
             body: Consumer2<OrderProvider, MahsulotProvider>(
               builder: (context, orderProvider, mahsulotProvider, child) {
                 final now = DateTime.now();
-                final fullName = "${profileProvider.surname} ${profileProvider.name}".trim().toLowerCase();
 
                 final monthlyOrders = orderProvider.orders
-                    .where((o) => o.date.year == now.year && o.date.month == now.month)
+                    .where((o) =>
+                o.date.year == now.year && o.date.month == now.month)
                     .toList();
 
-                final monthlyStockAdded = mahsulotProvider.zaxiraTarixi.where((z) =>
-                    z.sana.year == now.year &&
-                    z.sana.month == now.month).toList();
-
-                double displayRevenue = 0;
-                int displayProductsSold = 0;
-                int displayTaskCount = 0;
-
-                displayRevenue = orderProvider.orders
+                final double displayRevenue = orderProvider.orders
                     .where((o) =>
-                        (o.paymentStatus == "To'langan" || o.status == "Sotildi") &&
-                        o.date.year == now.year &&
-                        o.date.month == now.month)
+                (o.paymentStatus == "To'langan" ||
+                    o.status == "Sotildi") &&
+                    o.date.year == now.year &&
+                    o.date.month == now.month)
                     .fold(0.0, (sum, o) {
-                      if (o.status == "Sotildi") {
-                        return sum + (o.price * o.quantity);
-                      }
-                      return sum + o.amountPaid;
-                    });
-                displayProductsSold = orderProvider.orders
-                    .where((o) =>
-                        (o.paymentStatus == "To'langan" || o.status == "Sotildi") &&
-                        o.date.year == now.year &&
-                        o.date.month == now.month)
-                    .fold(0, (sum, o) => sum + o.quantity);
-                displayTaskCount = monthlyOrders.length;
+                  if (o.status == "Sotildi") {
+                    return sum + (o.price * o.quantity);
+                  }
+                  return sum + o.amountPaid;
+                });
 
-                return TabBarView(children: [
-                  Scaffold(
-                    backgroundColor: Colors.transparent,
-                    body: ListView(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              top: 20, left: 15, right: 15, bottom: 10),
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            surfaceTintColor: Colors.transparent,
-                            elevation: isDark ? 0 : 10,
-                            shadowColor: isDark ? Colors.black26 : null,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            child: Container(
-                              height: 140,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF252836) : Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: isDark ? Border.all(color: const Color(0xFF3A3F4B)) : null,
-                              ),
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, top: 10, right: 20),
-                                    child: Row(
+                final int displayProductsSold = orderProvider.orders
+                    .where((o) =>
+                (o.paymentStatus == "To'langan" ||
+                    o.status == "Sotildi") &&
+                    o.date.year == now.year &&
+                    o.date.month == now.month)
+                    .fold(0, (sum, o) => sum + o.quantity);
+
+                final int displayTaskCount = monthlyOrders.length;
+
+                final int paidCount = monthlyOrders
+                    .where((o) =>
+                o.paymentStatus == "To'langan" ||
+                    o.status == "Sotildi")
+                    .length;
+                final int pendingCount = monthlyOrders.length - paidCount;
+
+                final double pendingAmount = monthlyOrders
+                    .where((o) =>
+                o.paymentStatus != "To'langan" &&
+                    o.status != "Sotildi")
+                    .fold(0.0, (sum, o) => sum + (o.price * o.quantity));
+
+                final String query = _searchQuery.trim().toLowerCase();
+                final List<OrderModel> filteredOrders =
+                monthlyOrders.where((o) {
+                  final bool isPaid = o.paymentStatus == "To'langan" ||
+                      o.status == "Sotildi";
+                  if (_activeFilter == _OylikFilter.paid && !isPaid) {
+                    return false;
+                  }
+                  if (_activeFilter == _OylikFilter.pending && isPaid) {
+                    return false;
+                  }
+                  if (query.isEmpty) return true;
+                  return o.productName.toLowerCase().contains(query) ||
+                      o.customerName.toLowerCase().contains(query);
+                }).toList();
+
+                return TabBarView(
+                  children: [
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        await Future.wait([
+                          orderProvider.fetchSalesFromApi(),
+                          mahsulotProvider.loadProducts(),
+                        ]);
+                      },
+                      color: _OylikColors.primaryBlue,
+                      backgroundColor:
+                      isDark ? _OylikColors.cardDark : Colors.white,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double contentMaxWidth =
+                          constraints.maxWidth > 1080
+                              ? 1080
+                              : constraints.maxWidth;
+
+                          return SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(
+                              parent: BouncingScrollPhysics(),
+                            ),
+                            padding: const EdgeInsets.fromLTRB(16, 10, 16, 48),
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints:
+                                BoxConstraints(maxWidth: contentMaxWidth),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // 1. KPI SUMMARY CARDS
+                                    _buildSummaryCards(
+                                      lang: lang,
+                                      isDark: isDark,
+                                      now: now,
+                                      displayRevenue: displayRevenue,
+                                      displayProductsSold: displayProductsSold,
+                                      displayTaskCount: displayTaskCount,
+                                      paidCount: paidCount,
+                                      pendingCount: pendingCount,
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    // 2. INTERAKTIV DIAGRAMMALAR
+                                    _buildChartsSection(
+                                      lang: lang,
+                                      isDark: isDark,
+                                      maxWidth: contentMaxWidth - 32,
+                                      monthlyOrders: monthlyOrders,
+                                      now: now,
+                                      paidAmount: displayRevenue,
+                                      pendingAmount: pendingAmount,
+                                      paidCount: paidCount,
+                                      pendingCount: pendingCount,
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    // 3. QIDIRUV VA KAPSULA FILTR
+                                    if (monthlyOrders.isNotEmpty) ...[
+                                      _buildSearchAndFilterBar(
+                                        lang: lang,
+                                        isDark: isDark,
+                                        maxWidth: contentMaxWidth - 32,
+                                        allCount: monthlyOrders.length,
+                                        paidCount: paidCount,
+                                        pendingCount: pendingCount,
+                                      ),
+                                      const SizedBox(height: 14),
+                                    ],
+
+                                    // 4. BUYURTMALAR SARLAVHASI
+                                    Row(
                                       children: [
-                                        Text(
-                                          getTxt(lang, oylar[now.month]),
-                                          style: TextStyle(
+                                        Container(
+                                          width: 38,
+                                          height: 38,
+                                          decoration: BoxDecoration(
+                                            color: _OylikColors.primaryBlue
+                                                .withValues(alpha: 0.12),
+                                            borderRadius:
+                                            BorderRadius.circular(12),
+                                          ),
+                                          child: const Icon(
+                                            Icons.receipt_long_rounded,
+                                            color: _OylikColors.primaryBlue,
+                                            size: 21,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            "${OylikDaromadPages.getTxt(lang, oylar[now.month])} ${now.year}",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
                                               fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: isDark ? Colors.white : Colors.black),
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : const Color(0xFF0F172A),
+                                            ),
+                                          ),
                                         ),
-                                        const Spacer(),
-                                        Text(
-                                          "${now.year}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18,
-                                              color: isDark ? Colors.white : Colors.black),
-                                        )
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 11, vertical: 5),
+                                          decoration: BoxDecoration(
+                                            color: _OylikColors.primaryBlue
+                                                .withValues(alpha: 0.12),
+                                            borderRadius:
+                                            BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            "${filteredOrders.length} ${OylikDaromadPages.getTxt(lang, "ta")}",
+                                            style: const TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: _OylikColors.primaryBlue,
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, top: 5, right: 20),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          getTxt(lang, "sotildi"),
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: isDark ? Colors.white : Colors.black),
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          "$displayProductsSold ${getTxt(lang, "dona")}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: isDark ? const Color(0xFF3C8DFF) : Theme.of(context).colorScheme.primary),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, top: 5, right: 20),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          getTxt(lang, "buyurtmalar"),
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: isDark ? Colors.white : Colors.black),
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          "$displayTaskCount ${getTxt(lang, "ta")}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: isDark ? const Color(0xFF3C8DFF) : Theme.of(context).colorScheme.primary),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, top: 5, right: 20),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          getTxt(lang, "summa"),
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: isDark ? Colors.white : Colors.black),
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          "${_formatMoney(displayRevenue)} ${getTxt(lang, "valyuta")}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: isDark ? Colors.white : Theme.of(context).colorScheme.secondary),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 12),
+
+                                    // 5. BUYURTMALAR RO'YXATI
+                                    if (monthlyOrders.isEmpty)
+                                      _buildEmptyOrdersCard(
+                                        isDark: isDark,
+                                        message: OylikDaromadPages.getTxt(
+                                            lang, "oyda_buyurtmalar_yoq"),
+                                        showClearButton: false,
+                                      )
+                                    else if (filteredOrders.isEmpty)
+                                      _buildEmptyOrdersCard(
+                                        isDark: isDark,
+                                        message: OylikDaromadPages.getTxt(
+                                            lang, "natija_topilmadi"),
+                                        clearLabel: OylikDaromadPages.getTxt(
+                                            lang, "filtrni_tozalash"),
+                                        showClearButton: true,
+                                        onClear: () {
+                                          _searchController.clear();
+                                          setState(() {
+                                            _searchQuery = "";
+                                            _activeFilter = _OylikFilter.all;
+                                          });
+                                        },
+                                      )
+                                    else
+                                      _buildOrdersGrid(
+                                        context,
+                                        orders: filteredOrders,
+                                        mahsulotProvider: mahsulotProvider,
+                                        lang: lang,
+                                        isDark: isDark,
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        if (monthlyOrders.isEmpty)
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(40),
-                              child: Text(
-                                getTxt(lang, "oyda_buyurtmalar_yoq"),
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    color: isDark ? Colors.white54 : Colors.grey),
-                              ),
-                            ),
-                          )
-                        else
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: monthlyOrders.length,
-                            itemBuilder: (context, index) {
-                              final order = monthlyOrders[index];
-                              return _buildOrderCard(context, order, lang);
-                            },
-                          ),
-                        const SizedBox(height: 100),
-                      ],
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  const UmumiyDaromadPages()
-                ]);
+                    const UmumiyDaromadPages(),
+                  ],
+                );
               },
             ),
           );
@@ -424,248 +561,1233 @@ class OylikDaromadPages extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(
-      BuildContext context, OrderModel order, String lang) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    return Card(
-      color: isDark ? const Color(0xFF252836) : null,
-      elevation: isDark ? 0 : 10,
-      surfaceTintColor: Colors.transparent,
-      shadowColor: isDark ? Colors.black26 : null,
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(left: 15, right: 15, top: 5),
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(top: 5),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF252836) : Colors.white,
-          border: isDark ? Border.all(color: const Color(0xFF3A3F4B)) : null,
+  // ============================================================
+  // 1. KPI SUMMARY CARDS
+  // ============================================================
+  Widget _buildSummaryCards({
+    required String lang,
+    required bool isDark,
+    required DateTime now,
+    required double displayRevenue,
+    required int displayProductsSold,
+    required int displayTaskCount,
+    required int paidCount,
+    required int pendingCount,
+  }) {
+    final String unit = OylikDaromadPages.getTxt(lang, "ta");
+    final String dona = OylikDaromadPages.getTxt(lang, "dona");
+    final String currency = OylikDaromadPages.getTxt(lang, "valyuta");
+
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            title: OylikDaromadPages.getTxt(lang, oylar[now.month]),
+            icon: Icons.show_chart_rounded,
+            iconColor: _OylikColors.green,
+            mainValue: "${_formatMoney(displayRevenue)} $currency",
+            subLabel1: OylikDaromadPages.getTxt(lang, "sotildi"),
+            subVal1: "$displayProductsSold $dona",
+            subLabel2: OylikDaromadPages.getTxt(lang, "buyurtmalar"),
+            subVal2: "$displayTaskCount $unit",
+            isDark: isDark,
+          ),
         ),
-        child: Column(
-          children: [
-            Row(
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildStatCard(
+            title: OylikDaromadPages.getTxt(lang, "buyurtmalar")
+                .replaceAll(':', ''),
+            icon: Icons.shopping_bag_rounded,
+            iconColor: _OylikColors.primaryBlue,
+            mainValue: "$displayTaskCount $unit",
+            subLabel1: OylikDaromadPages.getTxt(lang, "tolangan"),
+            subVal1: "$paidCount $unit",
+            subLabel2: OylikDaromadPages.getTxt(lang, "kutilmoqda"),
+            subVal2: "$pendingCount $unit",
+            isDark: isDark,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required String mainValue,
+    required String subLabel1,
+    required String subVal1,
+    required String subLabel2,
+    required String subVal2,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? _OylikColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : const Color(0xFF64748B).withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Icon(icon, color: iconColor, size: 22),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white70 : const Color(0xFF475569),
+            ),
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              mainValue,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.04)
+                  : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 100,
-                  height: 130,
-                  margin: const EdgeInsets.only(left: 10, top: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
-                    color: isDark ? const Color(0xFF2A2E38) : Colors.grey,
-                  ),
-                  child: Icon(Icons.shopping_bag, size: 50, color: isDark ? Colors.white24 : Colors.white),
-                ),
-                const SizedBox(width: 10),
-                Expanded(child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      order.productName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: isDark ? const Color(0xFF3C8DFF) : Theme.of(context).colorScheme.primary,
+                    Flexible(
+                      child: Text(
+                        subLabel1,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? Colors.white70
+                              : const Color(0xFF475569),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(width: 4),
                     Text(
-                      "${getTxt(lang, "sana")} ${order.date.day} ${getTxt(lang, oylar[order.date.month])} ${order.date.year}",
-                      style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                      subVal1,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        color:
+                        isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
                     ),
-                    Row(
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        subLabel2,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? Colors.white70
+                              : const Color(0xFF475569),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      subVal2,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        color:
+                        isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // 2. INTERAKTIV DIAGRAMMALAR (OYLIK KUNLIK WAVE + TO'LOV DONUT)
+  // ============================================================
+  Widget _buildChartsSection({
+    required String lang,
+    required bool isDark,
+    required double maxWidth,
+    required List<OrderModel> monthlyOrders,
+    required DateTime now,
+    required double paidAmount,
+    required double pendingAmount,
+    required int paidCount,
+    required int pendingCount,
+  }) {
+    final waveChartCard = _buildMonthlyWaveChartCard(
+      lang: lang,
+      isDark: isDark,
+      monthlyOrders: monthlyOrders,
+      now: now,
+    );
+
+    final donutChartCard = _buildPaymentDonutCard(
+      lang: lang,
+      isDark: isDark,
+      paidAmount: paidAmount,
+      pendingAmount: pendingAmount,
+      paidCount: paidCount,
+      pendingCount: pendingCount,
+    );
+
+    if (maxWidth >= 720) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 6, child: waveChartCard),
+          const SizedBox(width: 14),
+          Expanded(flex: 5, child: donutChartCard),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        waveChartCard,
+        const SizedBox(height: 14),
+        donutChartCard,
+      ],
+    );
+  }
+
+  Widget _buildMonthlyWaveChartCard({
+    required String lang,
+    required bool isDark,
+    required List<OrderModel> monthlyOrders,
+    required DateTime now,
+  }) {
+    final int daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+
+    final data = List.generate(daysInMonth, (i) {
+      final int day = i + 1;
+      return monthlyOrders
+          .where((o) =>
+      (o.paymentStatus == "To'langan" || o.status == "Sotildi") &&
+          o.date.day == day)
+          .fold<double>(0.0, (sum, o) {
+        if (o.status == "Sotildi") return sum + (o.price * o.quantity);
+        return sum + o.amountPaid;
+      });
+    });
+
+    final labels = List.generate(daysInMonth, (i) => (i + 1).toString());
+    double maxVal =
+    data.fold(0.0, (prev, element) => element > prev ? element : prev);
+    if (maxVal <= 0) maxVal = 1000;
+
+    String formatY(double val) {
+      if (val >= 1000000) return '${(val / 1000000).toStringAsFixed(1)}M';
+      if (val >= 1000) return '${(val / 1000).toStringAsFixed(0)}k';
+      return val.toStringAsFixed(0);
+    }
+
+    final spots = List.generate(
+      data.length,
+          (i) => FlSpot(i.toDouble(), data[i]),
+    );
+    final currency = OylikDaromadPages.getTxt(lang, "valyuta");
+
+    return Container(
+      height: 280,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? _OylikColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : const Color(0xFF64748B).withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  OylikDaromadPages.getTxt(lang, "oylik_trend"),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.auto_graph_rounded,
+                size: 22,
+                color: _OylikColors.green,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: SizedBox(
+                width: daysInMonth * 36.0,
+                child: LineChart(
+                  LineChartData(
+                    minX: 0,
+                    maxX: (data.length - 1).toDouble(),
+                    minY: 0,
+                    maxY: maxVal * 1.25,
+                    lineTouchData: LineTouchData(
+                      enabled: true,
+                      touchTooltipData: LineTouchTooltipData(
+                        getTooltipColor: (_) =>
+                        isDark ? const Color(0xFF0F172A) : Colors.white,
+                        tooltipRoundedRadius: 12,
+                        tooltipPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 7),
+                        tooltipMargin: 10,
+                        getTooltipItems: (touchedSpots) {
+                          return touchedSpots.map((spot) {
+                            return LineTooltipItem(
+                              "${_formatMoney(spot.y)} $currency",
+                              TextStyle(
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                              ),
+                            );
+                          }).toList();
+                        },
+                      ),
+                    ),
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      drawHorizontalLine: true,
+                      horizontalInterval: maxVal / 3,
+                      getDrawingHorizontalLine: (value) => FlLine(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : const Color(0xFFE2E8F0),
+                        strokeWidth: 1.0,
+                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 40,
+                          interval: maxVal / 3,
+                          getTitlesWidget: (value, meta) {
+                            if (value < 0) return const SizedBox();
+                            return SideTitleWidget(
+                              axisSide: meta.axisSide,
+                              space: 4,
+                              child: Text(
+                                formatY(value),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.white54
+                                      : const Color(0xFF64748B),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 28,
+                          interval: 1,
+                          getTitlesWidget: (value, meta) {
+                            final int idx = value.toInt();
+                            if (idx >= 0 && idx < labels.length) {
+                              final bool isToday = (idx + 1) == now.day;
+                              return SideTitleWidget(
+                                axisSide: meta.axisSide,
+                                space: 6,
+                                child: Text(
+                                  labels[idx],
+                                  style: TextStyle(
+                                    color: isToday
+                                        ? _OylikColors.primaryBlue
+                                        : (isDark
+                                        ? Colors.white54
+                                        : const Color(0xFF64748B)),
+                                    fontWeight: isToday
+                                        ? FontWeight.w900
+                                        : FontWeight.w700,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox();
+                          },
+                        ),
+                      ),
+                      rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        isCurved: true,
+                        curveSmoothness: 0.35,
+                        preventCurveOverShooting: true,
+                        spots: spots,
+                        color: _OylikColors.green,
+                        barWidth: 3.2,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, percent, barData, index) {
+                            final bool isToday = (index + 1) == now.day;
+                            return FlDotCirclePainter(
+                              radius: isToday ? 5.5 : 4.0,
+                              color: isDark
+                                  ? const Color(0xFF1E293B)
+                                  : Colors.white,
+                              strokeWidth: isToday ? 3 : 2.2,
+                              strokeColor: isToday
+                                  ? _OylikColors.primaryBlue
+                                  : _OylikColors.green,
+                            );
+                          },
+                        ),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              _OylikColors.green
+                                  .withValues(alpha: isDark ? 0.35 : 0.25),
+                              _OylikColors.green.withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentDonutCard({
+    required String lang,
+    required bool isDark,
+    required double paidAmount,
+    required double pendingAmount,
+    required int paidCount,
+    required int pendingCount,
+  }) {
+    final int totalOrders = paidCount + pendingCount;
+    final int paidPercent =
+    totalOrders > 0 ? ((paidCount / totalOrders) * 100).round() : 0;
+    final String unit = OylikDaromadPages.getTxt(lang, "ta");
+    final String currency = OylikDaromadPages.getTxt(lang, "valyuta");
+
+    final List<PieChartSectionData> sections = totalOrders == 0
+        ? [
+      PieChartSectionData(
+        value: 1,
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : const Color(0xFFE2E8F0),
+        radius: 20,
+        showTitle: false,
+      ),
+    ]
+        : [
+      if (paidCount > 0)
+        PieChartSectionData(
+          value: paidCount.toDouble(),
+          color: _OylikColors.green,
+          radius: 22,
+          showTitle: false,
+        ),
+      if (pendingCount > 0)
+        PieChartSectionData(
+          value: pendingCount.toDouble(),
+          color: _OylikColors.amber,
+          radius: 22,
+          showTitle: false,
+        ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? _OylikColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : const Color(0xFF64748B).withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  OylikDaromadPages.getTxt(lang, "tolov_taqsimoti"),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.pie_chart_rounded,
+                size: 22,
+                color: _OylikColors.primaryBlue,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              SizedBox(
+                width: 124,
+                height: 124,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        sectionsSpace:
+                        totalOrders > 0 && paidCount > 0 && pendingCount > 0
+                            ? 3
+                            : 0,
+                        centerSpaceRadius: 36,
+                        startDegreeOffset: -90,
+                        sections: sections,
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          getTxt(lang, "narxi"),
+                          "$paidPercent%",
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white70 : Theme.of(context).colorScheme.primary,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
                           ),
                         ),
-                        const SizedBox(width: 23),
                         Text(
-                          "${_formatMoney(order.price)} ${getTxt(lang, "valyuta")}",
+                          OylikDaromadPages.getTxt(lang, "tolangan"),
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          getTxt(lang, "mijoz"),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white70 : Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 25),
-                        Text(
-                          order.customerName.isEmpty ? getTxt(lang, "klent") : order.customerName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          getTxt(lang, "soni"),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white70 : Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 30),
-                        Text(
-                          "${order.quantity} ${getTxt(lang, "dona")}",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          getTxt(lang, "tolov"),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white70 : Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 25),
-                        Text(
-                          order.status == "Sotildi" ? getTxt(lang, "tolangan") : getTxt(lang, "kutilmoqda"),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: order.status == "Sotildi"
-                                ? Colors.green
-                                : Colors.orange,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? Colors.white60
+                                : const Color(0xFF64748B),
                           ),
                         ),
                       ],
                     ),
                   ],
-                ),)
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWorkerStockCard(BuildContext context, ZaxiraTarixiModel z, MahsulotProvider mahsulotProvider, String lang) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final product = mahsulotProvider.mahsulotlar.firstWhere(
-      (m) => m.nomi.trim().toLowerCase() == z.mahsulotNomi.trim().toLowerCase(),
-      orElse: () => MahsulotModel(
-          nomi: "",
-          bemorNarxi: "0",
-          shifokorNarxi: "0",
-          kategoriya: "Umumiy",
-          keshbek: "0",
-          status: "Faol"),
-    );
-    final productPrice = double.tryParse(product.shifokorNarxi.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0.0;
-
-    return Card(
-      elevation: 4,
-      surfaceTintColor: Colors.transparent,
-      shadowColor: isDark ? Colors.black26 : null,
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(left: 15, right: 15, top: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF252836) : Colors.white,
-          border: isDark ? Border.all(color: const Color(0xFF3A3F4B)) : null,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 100,
-              height: 110,
-              margin: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: isDark ? const Color(0xFF2A2E38) : Colors.grey.shade100,
+                ),
               ),
-              child: product.rasm != null && product.rasm!.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image.file(File(product.rasm!), fit: BoxFit.cover),
-                    )
-                  : Icon(Icons.inventory_2_outlined,
-                      size: 50,
-                      color: isDark ? Colors.white24 : Colors.grey.shade400),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      z.mahsulotNomi,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: isDark ? const Color(0xFF3C8DFF) : Colors.indigo,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    _buildLegendTile(
+                      color: _OylikColors.green,
+                      label: OylikDaromadPages.getTxt(lang, "tolangan"),
+                      countText: "$paidCount $unit",
+                      amountText: "${_formatMoney(paidAmount)} $currency",
+                      isDark: isDark,
                     ),
-                    const SizedBox(height: 5),
-                    _buildInfoRow(context, getTxt(lang, "ish_haqqi"), "${_formatMoney(productPrice)} ${getTxt(lang, "valyuta")}"),
-                    _buildInfoRow(context, getTxt(lang, "soni"), "${z.miqdor} ${getTxt(lang, "dona")}"),
-                    _buildInfoRow(context, getTxt(lang, "jami"), "${_formatMoney(productPrice * z.miqdor)} ${getTxt(lang, "valyuta")}"),
-                    _buildInfoRow(context, getTxt(lang, "sana"), DateFormat('dd.MM.yyyy HH:mm').format(z.sana)),
+                    const SizedBox(height: 10),
+                    _buildLegendTile(
+                      color: _OylikColors.amber,
+                      label: OylikDaromadPages.getTxt(lang, "kutilmoqda"),
+                      countText: "$pendingCount $unit",
+                      amountText: "${_formatMoney(pendingAmount)} $currency",
+                      isDark: isDark,
+                    ),
                   ],
                 ),
               ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegendTile({
+    required Color color,
+    required String label,
+    required String countText,
+    required String amountText,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.04)
+            : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: color.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                  ),
+                ),
+              ),
+              Text(
+                countText,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              amountText,
+              style: TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // 3. SEARCH + FILTER BAR
+  // ============================================================
+  Widget _buildSearchAndFilterBar({
+    required String lang,
+    required bool isDark,
+    required double maxWidth,
+    required int allCount,
+    required int paidCount,
+    required int pendingCount,
+  }) {
+    final searchField = Container(
+      decoration: BoxDecoration(
+        color: isDark ? _OylikColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) => setState(() => _searchQuery = value),
+        style: TextStyle(
+          fontSize: 15.5,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : const Color(0xFF0F172A),
+        ),
+        decoration: InputDecoration(
+          hintText: OylikDaromadPages.getTxt(lang, "qidirish"),
+          hintStyle: TextStyle(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            size: 22,
+            color: isDark ? Colors.white54 : const Color(0xFF64748B),
+          ),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+            onPressed: () {
+              _searchController.clear();
+              setState(() => _searchQuery = "");
+            },
+            icon: Icon(
+              Icons.close_rounded,
+              size: 20,
+              color: isDark ? Colors.white54 : const Color(0xFF64748B),
+            ),
+          )
+              : null,
+          border: InputBorder.none,
+          contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      ),
+    );
+
+    final filterCapsule = Container(
+      height: 46,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? _OylikColors.cardDark : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(23),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildFilterPill(
+              label:
+              "${OylikDaromadPages.getTxt(lang, "barchasi")} ($allCount)",
+              selected: _activeFilter == _OylikFilter.all,
+              activeColor: _OylikColors.primaryBlue,
+              isDark: isDark,
+              onTap: () => setState(() => _activeFilter = _OylikFilter.all),
+            ),
+          ),
+          Expanded(
+            child: _buildFilterPill(
+              label:
+              "${OylikDaromadPages.getTxt(lang, "tolangan")} ($paidCount)",
+              selected: _activeFilter == _OylikFilter.paid,
+              activeColor: _OylikColors.green,
+              isDark: isDark,
+              onTap: () => setState(() => _activeFilter = _OylikFilter.paid),
+            ),
+          ),
+          Expanded(
+            child: _buildFilterPill(
+              label:
+              "${OylikDaromadPages.getTxt(lang, "kutilmoqda")} ($pendingCount)",
+              selected: _activeFilter == _OylikFilter.pending,
+              activeColor: _OylikColors.amber,
+              isDark: isDark,
+              onTap: () =>
+                  setState(() => _activeFilter = _OylikFilter.pending),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (maxWidth >= 700) {
+      return Row(
+        children: [
+          Expanded(flex: 5, child: searchField),
+          const SizedBox(width: 12),
+          Expanded(flex: 6, child: filterCapsule),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        searchField,
+        const SizedBox(height: 10),
+        filterCapsule,
+      ],
+    );
+  }
+
+  Widget _buildFilterPill({
+    required String label,
+    required bool selected,
+    required Color activeColor,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: selected ? activeColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(19),
+          boxShadow: selected
+              ? [
+            BoxShadow(
+              color: activeColor.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ]
+              : null,
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
+              color: selected
+                  ? Colors.white
+                  : (isDark ? Colors.white70 : const Color(0xFF475569)),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, String label, String value) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 70,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white70 : Colors.indigo,
+  // ============================================================
+  // 4. ORDERS GRID & CARD
+  // ============================================================
+  Widget _buildOrdersGrid(
+      BuildContext context, {
+        required List<OrderModel> orders,
+        required MahsulotProvider mahsulotProvider,
+        required String lang,
+        required bool isDark,
+      }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double maxWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.of(context).size.width - 32;
+        const double spacing = 12;
+        final int columns = maxWidth >= 700 ? 2 : 1;
+        final double itemWidth =
+            (maxWidth - spacing * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: orders.map((order) {
+            return SizedBox(
+              width: itemWidth,
+              child: _buildOrderCard(
+                context,
+                order: order,
+                mahsulotProvider: mahsulotProvider,
+                lang: lang,
+                isDark: isDark,
               ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildOrderCard(
+      BuildContext context, {
+        required OrderModel order,
+        required MahsulotProvider mahsulotProvider,
+        required String lang,
+        required bool isDark,
+      }) {
+    final bool isPaid =
+        order.paymentStatus == "To'langan" || order.status == "Sotildi";
+    final Color paymentColor =
+    isPaid ? _OylikColors.green : _OylikColors.amber;
+
+    final product = mahsulotProvider.mahsulotlar.firstWhere(
+          (m) => m.nomi == order.productName,
+      orElse: () => MahsulotModel(
+        nomi: "",
+        bemorNarxi: "0",
+        shifokorNarxi: "0",
+        kategoriya: "Umumiy",
+        keshbek: "0",
+        status: "Faol",
+      ),
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? _OylikColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : const Color(0xFF64748B).withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildOrderProductAvatar(
+            product: product,
+            productName: order.productName,
+            isDark: isDark,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        order.productName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17.5,
+                          height: 1.2,
+                          color:
+                          isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: paymentColor.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        isPaid
+                            ? OylikDaromadPages.getTxt(lang, "tolangan")
+                            : OylikDaromadPages.getTxt(lang, "kutilmoqda"),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: paymentColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _buildInfoRow(
+                  OylikDaromadPages.getTxt(lang, "sana"),
+                  "${order.date.day} ${OylikDaromadPages.getTxt(lang, oylar[order.date.month])} ${order.date.year}",
+                  isDark,
+                ),
+                _buildInfoRow(
+                  OylikDaromadPages.getTxt(lang, "narxi"),
+                  "${_formatMoney(order.price)} ${OylikDaromadPages.getTxt(lang, "valyuta")}",
+                  isDark,
+                  valueColor: isDark
+                      ? _OylikColors.skyBlue
+                      : _OylikColors.primaryBlue,
+                ),
+                _buildInfoRow(
+                  OylikDaromadPages.getTxt(lang, "mijoz"),
+                  order.customerName.trim().isEmpty
+                      ? OylikDaromadPages.getTxt(lang, "klent")
+                      : order.customerName,
+                  isDark,
+                ),
+                _buildInfoRow(
+                  OylikDaromadPages.getTxt(lang, "soni"),
+                  "${order.quantity} ${OylikDaromadPages.getTxt(lang, "dona")}",
+                  isDark,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderProductAvatar({
+    required MahsulotModel product,
+    required String productName,
+    required bool isDark,
+  }) {
+    final String? rasm = product.rasm;
+    final bool hasImage = rasm != null && rasm.trim().isNotEmpty;
+    final String initial = productName.trim().isNotEmpty
+        ? productName.trim()[0].toUpperCase()
+        : "?";
+
+    Widget fallback() {
+      return Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.w900,
+            color:
+            isDark ? _OylikColors.skyBlue : _OylikColors.primaryBlue,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 78,
+      height: 78,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: isDark
+            ? const Color(0xFF0F172A)
+            : _OylikColors.primaryBlue.withValues(alpha: 0.1),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xFF334155)
+              : _OylikColors.primaryBlue.withValues(alpha: 0.18),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(17),
+        child: hasImage
+            ? (rasm.startsWith('http')
+            ? Image.network(
+          rasm,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => fallback(),
+        )
+            : Image.file(
+          File(rasm),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => fallback(),
+        ))
+            : fallback(),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+      String label,
+      String value,
+      bool isDark, {
+        Color? valueColor,
+      }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label ",
+            style: TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white60 : const Color(0xFF64748B),
             ),
           ),
           Expanded(
             child: Text(
               value,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: valueColor ??
+                    (isDark ? Colors.white : const Color(0xFF0F172A)),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyOrdersCard({
+    required bool isDark,
+    required String message,
+    required bool showClearButton,
+    String? clearLabel,
+    VoidCallback? onClear,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 34),
+      decoration: BoxDecoration(
+        color: isDark ? _OylikColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: _OylikColors.primaryBlue.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              showClearButton
+                  ? Icons.search_off_rounded
+                  : Icons.receipt_long_outlined,
+              size: 32,
+              color: _OylikColors.primaryBlue,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white70 : const Color(0xFF475569),
+            ),
+          ),
+          if (showClearButton && onClear != null && clearLabel != null) ...[
+            const SizedBox(height: 14),
+            TextButton.icon(
+              onPressed: onClear,
+              icon: const Icon(Icons.refresh_rounded, size: 20),
+              label: Text(
+                clearLabel,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: _OylikColors.primaryBlue,
+              ),
+            ),
+          ],
         ],
       ),
     );

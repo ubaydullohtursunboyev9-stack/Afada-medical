@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:flutter/material.dart';
 
 class ConnectivityService extends ChangeNotifier {
@@ -8,7 +7,6 @@ class ConnectivityService extends ChangeNotifier {
   bool get isConnected => _isConnected;
 
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
-  late StreamSubscription<InternetStatus> _internetSubscription;
 
   ConnectivityService() {
     _init();
@@ -16,28 +14,33 @@ class ConnectivityService extends ChangeNotifier {
 
   Future<void> _init() async {
     // Initial check
-    _isConnected = await InternetConnection().hasInternetAccess;
-    notifyListeners();
+    try {
+      final List<ConnectivityResult> results = await Connectivity().checkConnectivity();
+      _updateStatus(results);
+    } catch (e) {
+      debugPrint("Error checking connectivity: $e");
+    }
 
     // Listen to connectivity changes
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) async {
-      await _checkStatus();
-    });
-
-    // Listen to actual internet status
-    _internetSubscription = InternetConnection().onStatusChange.listen((status) {
-      bool newStatus = status == InternetStatus.connected;
-      if (_isConnected != newStatus) {
-        _isConnected = newStatus;
-        notifyListeners();
-      }
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      _updateStatus(results);
     });
   }
 
-  Future<void> _checkStatus() async {
-    bool hasAccess = await InternetConnection().hasInternetAccess;
-    if (_isConnected != hasAccess) {
-      _isConnected = hasAccess;
+  void _updateStatus(List<ConnectivityResult> results) {
+    // Agar ro'yxatda none bo'lsa yoki ro'yxat bo'sh bo'lsa, internet yo'q deb hisoblaymiz
+    bool status = false;
+    if (results.isNotEmpty) {
+      if (results.contains(ConnectivityResult.mobile) ||
+          results.contains(ConnectivityResult.wifi) ||
+          results.contains(ConnectivityResult.ethernet) ||
+          results.contains(ConnectivityResult.vpn)) {
+        status = true;
+      }
+    }
+    
+    if (_isConnected != status) {
+      _isConnected = status;
       notifyListeners();
     }
   }
@@ -45,7 +48,6 @@ class ConnectivityService extends ChangeNotifier {
   @override
   void dispose() {
     _connectivitySubscription.cancel();
-    _internetSubscription.cancel();
     super.dispose();
   }
 }
