@@ -1,10 +1,8 @@
 import 'dart:ui';
 import 'package:afada/provider/finished_product_provider.dart';
 import 'package:afada/provider/ishchilar_Provider/ishchilar_provider.dart';
-import 'package:afada/provider/mahsulotlar_provider/mahsulot_qoshish_provider.dart';
 import 'package:afada/provider/mijoz_provider/mijoz_provider.dart';
 import 'package:afada/provider/order_provider.dart';
-import 'package:afada/provider/profile_provider.dart';
 import 'package:afada/provider/sale_provider.dart';
 import 'package:afada/services/connectivity_service.dart';
 import 'package:flutter/material.dart';
@@ -40,25 +38,7 @@ class _NoInternetWrapperState extends State<NoInternetWrapper> {
       }
     }
 
-    return PopScope(
-      canPop: isConnected,
-      child: Stack(
-        children: [
-          // Main app content
-          // We wrap the child in an AbsorbPointer when offline to block all interactions
-          AbsorbPointer(
-            absorbing: !isConnected,
-            child: widget.child,
-          ),
-          
-          // No internet overlay
-          if (!isConnected)
-            const Positioned.fill(
-              child: NoInternetDialog(),
-            ),
-        ],
-      ),
-    );
+    return widget.child;
   }
 
   Future<void> _refreshAllData(BuildContext context) async {

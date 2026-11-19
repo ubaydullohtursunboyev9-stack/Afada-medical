@@ -285,11 +285,33 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   int _currentIndex = 0;
   late final PageController _pageController;
   late final List<Widget> _pages;
+  late final AnimationController _entryController;
+  late final Animation<double> _scaleAnimation;
+  late final Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _refreshAllData();
+
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 850),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.12, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _entryController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _entryController,
+      curve: Curves.easeOut,
+    );
+
+    _entryController.forward();
 
     _pageController = PageController(initialPage: 0);
     _pages = [
@@ -319,6 +341,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   void dispose() {
     _pageController.dispose();
+    _entryController.dispose();
     super.dispose();
   }
 
@@ -525,14 +548,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ],
         ),
       ),
-      body: PageView(
-        controller: _pageController,
-        physics: const BouncingScrollPhysics(),
-        onPageChanged: (index) {
-          HapticFeedback.selectionClick();
-          setState(() => _currentIndex = index);
-        },
-        children: _pages,
+      body: ScaleTransition(
+        scale: _scaleAnimation,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: PageView(
+            controller: _pageController,
+            physics: const BouncingScrollPhysics(),
+            onPageChanged: (index) {
+              HapticFeedback.selectionClick();
+              setState(() => _currentIndex = index);
+            },
+            children: _pages,
+          ),
+        ),
       ),
       bottomNavigationBar: _buildBottomNavigation(isDark),
       drawer: _buildPremiumDrawer(context, isDark),

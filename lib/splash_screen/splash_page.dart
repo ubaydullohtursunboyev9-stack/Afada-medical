@@ -56,13 +56,8 @@ class _SplashPageState extends State<SplashPage> {
 
       if (!mounted) return;
 
-      // Token hali amal qiladi
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const HomePage(),
-        ),
-      );
+      // Token hali amal qiladi -> Zoom-out transition bilan HomePage ga o'tamiz
+      _goToHome();
     } catch (e) {
       if (!mounted) return;
 
@@ -81,14 +76,33 @@ class _SplashPageState extends State<SplashPage> {
       } else {
         // Internet/server muammosi bo'lsa,
         // foydalanuvchini bekorga logout qilmaymiz.
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const HomePage(),
-          ),
-        );
+        _goToHome();
       }
     }
+  }
+
+  void _goToHome() {
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 900),
+        pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          );
+          return ScaleTransition(
+            scale: Tween<double>(begin: 1.15, end: 1.0).animate(curvedAnimation),
+            child: FadeTransition(
+              opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _goToLogin() {
