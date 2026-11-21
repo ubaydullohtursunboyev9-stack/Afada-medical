@@ -32,6 +32,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -39,3 +40,10 @@ flutter:
     - assets/image/
     - assets/image/video/splash_video.mp4
     - assets/image/img.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/image/logo.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true

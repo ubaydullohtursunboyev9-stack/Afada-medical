@@ -106,7 +106,6 @@ class _DraverIshchilarPagesState extends State<DraverIshchilarPages> {
   // Afada Medical Ranglar Palitrasi
   static const Color _primaryBlue = Color(0xFF0284C7);
   static const Color _skyBlue = Color(0xFF38BDF8);
-  static const Color _emerald = Color(0xFF10B981);
   static const Color _amber = Color(0xFFF59E0B);
   static const Color _indigo = Color(0xFF6366F1);
   static const Color _rose = Color(0xFFF43F5E);

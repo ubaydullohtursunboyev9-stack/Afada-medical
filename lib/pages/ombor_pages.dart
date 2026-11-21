@@ -8,6 +8,7 @@ import 'package:afada/provider/profile_provider.dart';
 import '../model/finished_product_model.dart';
 import '../model/mahsulot_modeli.dart';
 import '../model/model_provider.dart';
+import 'daromad_pages/Ishchilar/ishchi malumoti/ishchi_detal.dart';
 
 // ============================================================
 // CLINICAL COLORS (HomePages bilan bir xil rang palitrasi)
@@ -182,11 +183,11 @@ class _OmborPagesState extends State<OmborPages> {
   Widget build(BuildContext context) {
     final mahsulotProvider = context.watch<MahsulotProvider>();
     final finishedProductProvider = context.watch<FinishedProductProvider>();
-    // Til o'zgarganda UI avtomatik yangilanishi uchun
     context.watch<ProfileProvider>();
 
     final List<MahsulotModel> allProducts = mahsulotProvider.mahsulotlar;
-    final List<FinishedProductModel> finishedProducts = finishedProductProvider.finishedProducts;
+    final List<FinishedProductModel> finishedProducts =
+        finishedProductProvider.finishedProducts;
 
     final List<MahsulotModel> tugaganMahsulotlar =
     allProducts.where((p) => p.zaxira <= 0).toList();
@@ -293,11 +294,11 @@ class _OmborPagesState extends State<OmborPages> {
                 padding: const EdgeInsets.fromLTRB(16, 6, 16, 125),
                 child: Center(
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: contentMaxWidth),
+                    constraints:
+                    BoxConstraints(maxWidth: contentMaxWidth),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 1. 2x1 KPI STATISTIKA KARTALARI (HomePages uslubida)
                         _buildSummaryCards(
                           context,
                           isDark: isDark,
@@ -307,8 +308,6 @@ class _OmborPagesState extends State<OmborPages> {
                           totalFinishedQty: totalFinishedQty,
                         ),
                         const SizedBox(height: 14),
-
-                        // 2. QIDIRUV VA FILTR PANELI (Responsive)
                         _buildSearchAndFilterBar(
                           context,
                           isDark: isDark,
@@ -318,8 +317,6 @@ class _OmborPagesState extends State<OmborPages> {
                           outCount: tugaganMahsulotlar.length,
                         ),
                         const SizedBox(height: 16),
-
-                        // 3. ASOSIY KONTENT (Filtrga ko'ra)
                         if (_activeFilter == _OmborFilter.all) ...[
                           if (filteredTugagan.isNotEmpty) ...[
                             _buildTugaganHorizontalSection(
@@ -346,7 +343,8 @@ class _OmborPagesState extends State<OmborPages> {
                               isOutOfStockList: false,
                             )
                           else if (filteredTugagan.isEmpty)
-                            _buildNoSearchResultsCard(context, isDark),
+                            _buildNoSearchResultsCard(
+                                context, isDark),
                         ] else if (_activeFilter ==
                             _OmborFilter.ready) ...[
                           if (filteredTayyor.isNotEmpty)
@@ -364,7 +362,8 @@ class _OmborPagesState extends State<OmborPages> {
                               isOutOfStockList: false,
                             )
                           else
-                            _buildNoSearchResultsCard(context, isDark),
+                            _buildNoSearchResultsCard(
+                                context, isDark),
                         ] else ...[
                           if (filteredTugagan.isNotEmpty)
                             _buildProductsGridSection(
@@ -382,7 +381,8 @@ class _OmborPagesState extends State<OmborPages> {
                               isOutOfStockList: true,
                             )
                           else
-                            _buildNoSearchResultsCard(context, isDark),
+                            _buildNoSearchResultsCard(
+                                context, isDark),
                         ],
                       ],
                     ),
@@ -396,9 +396,6 @@ class _OmborPagesState extends State<OmborPages> {
     );
   }
 
-  // ============================================================
-  // 1. SUMMARY CARDS (Kattaroq va aniq o'qiladigan matnlar)
-  // ============================================================
   Widget _buildSummaryCards(
       BuildContext context, {
         required bool isDark,
@@ -641,9 +638,6 @@ class _OmborPagesState extends State<OmborPages> {
     );
   }
 
-  // ============================================================
-  // 2. SEARCH + SEGMENTED FILTER CAPSULE
-  // ============================================================
   Widget _buildSearchAndFilterBar(
       BuildContext context, {
         required bool isDark,
@@ -821,9 +815,6 @@ class _OmborPagesState extends State<OmborPages> {
     );
   }
 
-  // ============================================================
-  // 3. TUGAGAN MAHSULOTLAR HORIZONTAL ALERT KARUSELI
-  // ============================================================
   Widget _buildTugaganHorizontalSection(
       BuildContext context,
       List<MahsulotModel> tugaganMahsulotlar,
@@ -1003,9 +994,6 @@ class _OmborPagesState extends State<OmborPages> {
     );
   }
 
-  // ============================================================
-  // 4. TAYYOR / TUGAGAN MAHSULOTLAR RESPONSIVE GRID BO'LIMI
-  // ============================================================
   Widget _buildProductsGridSection(
       BuildContext context, {
         required String title,
@@ -1325,9 +1313,6 @@ class _OmborPagesState extends State<OmborPages> {
     );
   }
 
-  // ============================================================
-  // EMPTY & NO SEARCH RESULTS STATES
-  // ============================================================
   Widget _buildEmptyScrollableState(
       BuildContext context, {
         required bool isDark,
@@ -1449,9 +1434,6 @@ class _OmborPagesState extends State<OmborPages> {
     );
   }
 
-  // ============================================================
-  // ADD PRODUCT DIALOG
-  // ============================================================
   void _showAddProductDialog(
       BuildContext context,
       MahsulotProvider mahsulotProvider,
@@ -1552,7 +1534,8 @@ class _AddProductDialogState extends State<_AddProductDialog> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: _OmborColors.primaryBlue, width: 1.5),
+        borderSide:
+        const BorderSide(color: _OmborColors.primaryBlue, width: 1.5),
       ),
     );
   }
@@ -1601,9 +1584,36 @@ class _AddProductDialogState extends State<_AddProductDialog> {
         productId: _selectedProduct!.id!,
         quantity: soni,
       );
+
+      // Har bir qo'shish harakatini aniq sana va soati bilan alohida saqlash
       if (widget.parentContext.mounted) {
-        await widget.parentContext.read<MahsulotProvider>().loadProducts();
+        final profile = widget.parentContext.read<ProfileProvider>();
+        final now = DateTime.now();
+        final exactDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          now.hour,
+          now.minute,
+          now.second,
+        );
+        await WorkerProductionLog.record(
+          productName: _selectedProduct!.nomi,
+          quantity: soni,
+          dateTime: exactDateTime,
+          workerName: "${profile.surname} ${profile.name}".trim(),
+          workerLogin: profile.login,
+        );
+
+        final parentCtx = widget.parentContext;
+        if (parentCtx.mounted) {
+          await Future.wait([
+            parentCtx.read<MahsulotProvider>().loadProducts(),
+            widget.finishedProductProvider.fetchFinishedProducts(),
+          ]);
+        }
       }
+
       if (mounted) {
         Navigator.pop(context);
       }
@@ -1612,13 +1622,16 @@ class _AddProductDialogState extends State<_AddProductDialog> {
           SnackBar(
             content: Text(
               OmborPages.getTxt(
-                  widget.parentContext, "Mahsulot muvaffaqiyatli qo'shildi"),
+                widget.parentContext,
+                "Mahsulot muvaffaqiyatli qo'shildi",
+              ),
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
             ),
             backgroundColor: _OmborColors.green,
             behavior: SnackBarBehavior.floating,
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
           ),
         );
       }

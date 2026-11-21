@@ -241,10 +241,9 @@ class _IshchilarPagesState extends State<IshchilarPages> {
     final bool showDoctors = _activeFilter == _IshchiFilter.all ||
         _activeFilter == _IshchiFilter.doctors;
 
-    final bool nothingMatched =
-        (showTech ? filteredTechCount : 0) +
-            (showDoctors ? filteredDoctorCount : 0) ==
-            0;
+    final bool nothingMatched = (showTech ? filteredTechCount : 0) +
+        (showDoctors ? filteredDoctorCount : 0) ==
+        0;
 
     return Scaffold(
       backgroundColor: isDark ? _IshchiColors.slateDark : _IshchiColors.lightBg,
@@ -1648,6 +1647,9 @@ class IshchiGuruhi extends StatelessWidget {
                 children: filteredIshchilar.map((ishchi) {
                   final realIndex = provider.ishchilar.indexOf(ishchi);
                   final Color roleColor = _roleColor(ishchi.lavozim);
+                  final String displayName = "${ishchi.familya} ${ishchi.ism}"
+                      .replaceAll(RegExp(r'\s+'), ' ')
+                      .trim();
 
                   return SizedBox(
                     width: itemWidth,
@@ -1711,8 +1713,9 @@ class IshchiGuruhi extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
-                                    "${ishchi.familya} ${ishchi.ism}".trim(),
-                                    maxLines: 2,
+                                    displayName,
+                                    maxLines: 1,
+                                    softWrap: false,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontWeight: FontWeight.w800,

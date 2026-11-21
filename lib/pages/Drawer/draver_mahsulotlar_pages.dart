@@ -140,7 +140,6 @@ class _DraverMahsulotlarPagesState extends State<DraverMahsulotlarPages> {
   static const Color _skyBlue = Color(0xFF38BDF8);
   static const Color _emerald = Color(0xFF10B981);
   static const Color _amber = Color(0xFFF59E0B);
-  static const Color _indigo = Color(0xFF6366F1);
   static const Color _rose = Color(0xFFF43F5E);
   static const Color _slateDark = Color(0xFF0B132B);
   static const Color _cardDark = Color(0xFF1C2541);

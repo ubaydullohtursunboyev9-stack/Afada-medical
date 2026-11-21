@@ -11,6 +11,9 @@ import 'package:afada/provider/ishchilar_Provider/ishchilar_provider.dart';
 import 'package:afada/provider/order_provider.dart';
 import 'package:afada/provider/profile_provider.dart';
 
+import 'ishchi malumoti/ishchi_detal.dart';
+
+
 // ============================================================
 // CLINICAL COLORS (Boshqa sahifalar bilan bir xil rang tizimi)
 // ============================================================
@@ -172,7 +175,10 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
     final workerFamilya = _normalizeName(ishchi.familya);
     final workerLogin = _normalizeName(ishchi.login ?? "");
 
-    if (workerLogin.isNotEmpty && (creator == workerLogin || creator.contains(workerLogin) || workerLogin.contains(creator))) {
+    if (workerLogin.isNotEmpty &&
+        (creator == workerLogin ||
+            creator.contains(workerLogin) ||
+            workerLogin.contains(creator))) {
       return true;
     }
 
@@ -188,15 +194,25 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
       }
     }
 
-    if (workerIsm.length >= 2 && (creator == workerIsm || creator.contains(workerIsm) || workerIsm.contains(creator))) {
+    if (workerIsm.length >= 2 &&
+        (creator == workerIsm ||
+            creator.contains(workerIsm) ||
+            workerIsm.contains(creator))) {
       return true;
     }
-    if (workerFamilya.length >= 2 && (creator == workerFamilya || creator.contains(workerFamilya) || workerFamilya.contains(creator))) {
+    if (workerFamilya.length >= 2 &&
+        (creator == workerFamilya ||
+            creator.contains(workerFamilya) ||
+            workerFamilya.contains(creator))) {
       return true;
     }
 
     if ((creator.contains("admin") || creator.contains("administrator")) &&
-        (workerIsm.contains("admin") || workerIsm.contains("administrator") || workerLogin.contains("admin") || ishchi.lavozim.toLowerCase().contains("admin") || ishchi.kasb.toLowerCase().contains("admin"))) {
+        (workerIsm.contains("admin") ||
+            workerIsm.contains("administrator") ||
+            workerLogin.contains("admin") ||
+            ishchi.lavozim.toLowerCase().contains("admin") ||
+            ishchi.kasb.toLowerCase().contains("admin"))) {
       return true;
     }
 
@@ -250,27 +266,29 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
     final now = DateTime.now();
 
     final todayFinishedProducts = finishedProvider.finishedProducts.where((item) {
-      final date = item.createdAt;
+      final date = item.createdAt?.toLocal();
       if (date == null) return false;
       return date.year == now.year &&
           date.month == now.month &&
           date.day == now.day;
     }).toList();
 
-    final todaySales = orderProvider.orders
-        .where((o) =>
-    o.date.year == now.year &&
-        o.date.month == now.month &&
-        o.date.day == now.day)
-        .toList();
+    final todaySales = orderProvider.orders.where((o) {
+      final localDate = o.date.toLocal();
+      return localDate.year == now.year &&
+          localDate.month == now.month &&
+          localDate.day == now.day;
+    }).toList();
 
     int getProductCountForWorker(IshchiModel ishchi) {
       final currentUserName = "${profile.surname} ${profile.name}".trim();
       final isCurrentLoggedUser = _isSameWorker(ishchi, currentUserName) ||
-          _normalizeName("${ishchi.familya} ${ishchi.ism}") == _normalizeName(currentUserName);
+          _normalizeName("${ishchi.familya} ${ishchi.ism}") ==
+              _normalizeName(currentUserName);
 
       return todayFinishedProducts.where((item) {
-        if (item.createdByName != null && item.createdByName!.trim().isNotEmpty) {
+        if (item.createdByName != null &&
+            item.createdByName!.trim().isNotEmpty) {
           return _isSameWorker(ishchi, item.createdByName);
         }
         return isCurrentLoggedUser;
@@ -280,13 +298,19 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
     int getSoldCountForWorker(IshchiModel ishchi) {
       final currentUserName = "${profile.surname} ${profile.name}".trim();
       final isCurrentLoggedUser = _isSameWorker(ishchi, currentUserName) ||
-          _normalizeName("${ishchi.familya} ${ishchi.ism}") == _normalizeName(currentUserName);
+          _normalizeName("${ishchi.familya} ${ishchi.ism}") ==
+              _normalizeName(currentUserName);
 
       return todaySales.where((o) {
         String? createdByName;
         if (o.createdBy != null) {
           final m = o.createdBy!;
-          final raw = m["fullName"] ?? m["full_name"] ?? m["name"] ?? m["username"] ?? m["login"] ?? m["displayName"];
+          final raw = m["fullName"] ??
+              m["full_name"] ??
+              m["name"] ??
+              m["username"] ??
+              m["login"] ??
+              m["displayName"];
           if (raw != null) createdByName = raw.toString();
         }
 
@@ -431,7 +455,9 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 11, vertical: 5),
+                                horizontal: 11,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
                                 color: _WorkerColors.primaryBlue
                                     .withValues(alpha: 0.12),
@@ -450,7 +476,7 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
                         ),
                         const SizedBox(height: 12),
 
-                        // 4. XODIMLAR KARTALARI
+                        // 4. XODIMLAR KARTALARI (Bosilganda IshchiDetail ga o'tadi)
                         if (ishchilar.isEmpty)
                           _buildEmptyCard(
                             isDark: isDark,
@@ -933,151 +959,191 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
                 ishchi.kasb.trim().toLowerCase() == "sotuvchi" ||
                     ishchi.lavozim.trim().toLowerCase() == "sotuvchi";
 
-            final int displayCount = isSotuvchi
-                ? getSoldCount(ishchi)
-                : getProductCount(ishchi);
+            final int displayCount =
+            isSotuvchi ? getSoldCount(ishchi) : getProductCount(ishchi);
 
             final String displayLabel = isSotuvchi
                 ? getTxt(lang, "sotildi")
                 : getTxt(lang, "tayyorlagan");
 
-            final Color metricColor = isSotuvchi
-                ? _WorkerColors.primaryBlue
-                : _WorkerColors.green;
+            final Color metricColor =
+            isSotuvchi ? _WorkerColors.primaryBlue : _WorkerColors.green;
+
+            final String displayName = "${ishchi.familya} ${ishchi.ism}"
+                .replaceAll(RegExp(r'\s+'), ' ')
+                .trim();
 
             return SizedBox(
               width: itemWidth,
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: isDark ? _WorkerColors.cardDark : Colors.white,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isDark
-                          ? Colors.black.withValues(alpha: 0.25)
-                          : const Color(0xFF64748B).withValues(alpha: 0.05),
-                      blurRadius: 16,
-                      offset: const Offset(0, 5),
+                  onTap: () {
+                    final isAdmin = context.read<ProfileProvider>().role.trim().toLowerCase() == "admin";
+                    if (!isAdmin) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Row(
+                            children: [
+                              Icon(Icons.lock_rounded, color: Colors.white, size: 18),
+                              SizedBox(width: 10),
+                              Text("Ushbu ma'lumot faqat Admin uchun mo'ljallangan"),
+                            ],
+                          ),
+                          backgroundColor: const Color(0xFF1E293B),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      return;
+                    }
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => IshchiDetail(
+                          ishchi: ishchi,
+                          initialTabIndex: 0,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: isDark ? _WorkerColors.cardDark : Colors.white,
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDark
+                              ? Colors.black.withValues(alpha: 0.25)
+                              : const Color(0xFF64748B).withValues(alpha: 0.05),
+                          blurRadius: 16,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildWorkerAvatar(ishchi, metricColor, isDark),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "${ishchi.familya} ${ishchi.ism}".trim(),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 17.5,
-                              fontWeight: FontWeight.w800,
-                              height: 1.2,
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: metricColor.withValues(alpha: 0.13),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              "$displayLabel $displayCount ${getTxt(lang, "ta")}",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 14,
-                                color: metricColor,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildWorkerAvatar(ishchi, metricColor, isDark),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                "${getTxt(lang, "tel")} ",
+                                displayName,
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 17.5,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.2,
                                   color: isDark
-                                      ? Colors.white60
-                                      : const Color(0xFF64748B),
+                                      ? Colors.white
+                                      : const Color(0xFF0F172A),
                                 ),
                               ),
-                              Expanded(
-                                child: InkWell(
-                                  onTap: ishchi.telefon.trim().isEmpty
-                                      ? null
-                                      : () => _makePhoneCall(ishchi.telefon),
-                                  child: Text(
-                                    _formatPhoneDisplay(ishchi.telefon),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: ishchi.telefon.trim().isEmpty
-                                          ? (isDark
-                                          ? Colors.white38
-                                          : Colors.black38)
-                                          : (isDark
-                                          ? _WorkerColors.skyBlue
-                                          : _WorkerColors.primaryBlue),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: metricColor.withValues(alpha: 0.13),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  "$displayLabel $displayCount ${getTxt(lang, "ta")}",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: metricColor,
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(
+                                    "${getTxt(lang, "tel")} ",
+                                    style: TextStyle(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? Colors.white60
+                                          : const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: ishchi.telefon.trim().isEmpty
+                                          ? null
+                                          : () => _makePhoneCall(ishchi.telefon),
+                                      child: Text(
+                                        _formatPhoneDisplay(ishchi.telefon),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: ishchi.telefon.trim().isEmpty
+                                              ? (isDark
+                                              ? Colors.white38
+                                              : Colors.black38)
+                                              : (isDark
+                                              ? _WorkerColors.skyBlue
+                                              : _WorkerColors.primaryBlue),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    if (ishchi.telefon.trim().isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(14),
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            _makePhoneCall(ishchi.telefon);
-                          },
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color:
-                              _WorkerColors.green.withValues(alpha: 0.14),
+                        ),
+                        if (ishchi.telefon.trim().isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
                               borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Icon(
-                              Icons.phone_rounded,
-                              color: _WorkerColors.green,
-                              size: 22,
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                _makePhoneCall(ishchi.telefon);
+                              },
+                              child: Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: _WorkerColors.green
+                                      .withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(
+                                  Icons.phone_rounded,
+                                  color: _WorkerColors.green,
+                                  size: 22,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
-                  ],
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
             );
@@ -1092,8 +1158,7 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
       Color accentColor,
       bool isDark,
       ) {
-    final String? rasm = ishchi.rasm;
-    final bool hasImage = rasm != null && rasm.trim().isNotEmpty;
+    final String? rasm = ishchi.rasm?.trim();
     final String fam = ishchi.familya.trim();
     final String ism = ishchi.ism.trim();
     final String initial = fam.isNotEmpty
@@ -1120,6 +1185,26 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
       );
     }
 
+    Widget avatarContent = fallback();
+    if (rasm != null && rasm.isNotEmpty) {
+      if (rasm.startsWith('http://') || rasm.startsWith('https://')) {
+        avatarContent = Image.network(
+          rasm,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => fallback(),
+        );
+      } else {
+        final file = File(rasm);
+        if (file.existsSync()) {
+          avatarContent = Image.file(
+            file,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => fallback(),
+          );
+        }
+      }
+    }
+
     return Container(
       width: 68,
       height: 68,
@@ -1133,21 +1218,7 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
           width: 2,
         ),
       ),
-      child: ClipOval(
-        child: hasImage
-            ? (rasm.startsWith('http')
-            ? Image.network(
-          rasm,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => fallback(),
-        )
-            : Image.file(
-          File(rasm),
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => fallback(),
-        ))
-            : fallback(),
-      ),
+      child: ClipOval(child: avatarContent),
     );
   }
 

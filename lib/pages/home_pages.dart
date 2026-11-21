@@ -91,6 +91,7 @@ class AppTranslations {
       "Saqlash": "Saqlash",
       "Yangi buyurtma qo'shildi": "Yangi buyurtma qabul qilindi",
       "UZS": "UZS",
+      "ta": "ta",
       "Profil": "Profil",
       "Sotuv bo'limi": "Sotuv bo'limi",
       "Doimiy mijozlar": "Doimiy mijozlar",
@@ -109,6 +110,10 @@ class AppTranslations {
       "Oylik": "Oylik",
       "Yillik": "Yillik",
       "Admin va sotuvchi uchun": "Faqat shifokor va admin uchun",
+      "Foydalanuvchi": "Foydalanuvchi",
+      "Menyu": "Menyu",
+      "Bildirishnomalar": "Bildirishnomalar",
+      "Xatolik yuz berdi": "Xatolik yuz berdi",
     },
     "Rus": {
       "Afada Medical": "Afada Medical",
@@ -121,7 +126,7 @@ class AppTranslations {
       "Oylik daromad": "Месячный доход",
       "Oylik ish haqqi": "Месячная зарплата",
       "Ishchilar": "Персонал",
-      "Ishchilar soni:": "Врачи / Сотрудники:",
+      "Ishchilar soni:": "Сотрудники:",
       "Ish haqqi": "Оплата труда",
       "Qarzdorlik": "Задолженность",
       "Qarzdorlar:": "Должники:",
@@ -159,6 +164,7 @@ class AppTranslations {
       "Saqlash": "Сохранить",
       "Yangi buyurtma qo'shildi": "Заказ оформлен",
       "UZS": "UZS",
+      "ta": "шт",
       "Profil": "Профиль",
       "Sotuv bo'limi": "Отдел продаж",
       "Doimiy mijozlar": "База клиентов",
@@ -177,6 +183,10 @@ class AppTranslations {
       "Oylik": "Месяц",
       "Yillik": "Год",
       "Admin va sotuvchi uchun": "Доступно администраторам",
+      "Foydalanuvchi": "Пользователь",
+      "Menyu": "Меню",
+      "Bildirishnomalar": "Уведомления",
+      "Xatolik yuz berdi": "Произошла ошибка",
     },
     "Kiril": {
       "Afada Medical": "Afada Medical",
@@ -227,6 +237,7 @@ class AppTranslations {
       "Saqlash": "Сақлаш",
       "Yangi buyurtma qo'shildi": "Янги буюртма қабул қилинди",
       "UZS": "UZS",
+      "ta": "та",
       "Profil": "Профиль",
       "Sotuv bo'limi": "Сотув бўлими",
       "Doimiy mijozlar": "Беморлар базаси",
@@ -245,6 +256,10 @@ class AppTranslations {
       "Oylik": "Ойлик",
       "Yillik": "Йиллик",
       "Admin va sotuvchi uchun": "Фақат шифокор ва админ учун",
+      "Foydalanuvchi": "Фойдаланувчи",
+      "Menyu": "Меню",
+      "Bildirishnomalar": "Билдиришномалар",
+      "Xatolik yuz berdi": "Хатолик юз берди",
     },
   };
 
@@ -268,7 +283,7 @@ class MedColors {
   static const Color rose = Color(0xFFF43F5E);
   static const Color slateDark = Color(0xFF0B132B);
   static const Color cardDark = Color(0xFF1C2541);
-  static const Color lightBg = Color(0xFFF8FAFC);
+  static const Color lightBg = Color(0xFFF1F5F9);
 }
 
 // ============================================================
@@ -296,10 +311,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
     _entryController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 850),
+      duration: const Duration(milliseconds: 700),
     );
 
-    _scaleAnimation = Tween<double>(begin: 1.12, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 1.06, end: 1.0).animate(
       CurvedAnimation(
         parent: _entryController,
         curve: Curves.easeOutCubic,
@@ -353,7 +368,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     if (_pageController.hasClients) {
       _pageController.animateToPage(
         index,
-        duration: const Duration(milliseconds: 320),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
       );
     }
@@ -369,14 +384,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       barrierDismissible: true,
       barrierLabel: 'logout',
       barrierColor: Colors.black54,
-      transitionDuration: const Duration(milliseconds: 250),
+      transitionDuration: const Duration(milliseconds: 240),
       pageBuilder: (dialogContext, anim1, anim2) => const SizedBox(),
       transitionBuilder: (dialogContext, anim1, anim2, child) {
         return Transform.scale(
           scale: Curves.easeOutBack.transform(anim1.value),
           child: AlertDialog(
             backgroundColor: isDark ? MedColors.cardDark : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+              side: BorderSide(
+                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              ),
+            ),
             contentPadding: const EdgeInsets.all(24),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -404,18 +425,23 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 Row(
                   children: [
                     Expanded(
-                      child: TextButton(
+                      child: ElevatedButton(
                         onPressed: () => Navigator.pop(dialogContext),
-                        style: TextButton.styleFrom(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                          foregroundColor: isDark ? Colors.white70 : const Color(0xFF334155),
+                          elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+                            ),
+                          ),
                         ),
                         child: Text(
                           AppTranslations.get(pageContext, "Yo'q"),
-                          style: TextStyle(
-                            color: isDark ? Colors.white60 : Colors.black54,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -453,11 +479,56 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
+  Widget _buildAppBarButton({
+    required bool isDark,
+    required IconData icon,
+    required Color iconColor,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onPressed,
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.14)
+                    : const Color(0xFFCBD5E1),
+                width: 1,
+              ),
+              boxShadow: isDark
+                  ? null
+                  : [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(icon, size: 22, color: iconColor),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Til o'zgarganda AppBar va BottomNavigationBar darhol yangilanishi uchun
+    // Til o'zgarganda AppBar, Drawer va BottomNavigationBar darhol yangilanishi uchun
     context.watch<ProfileProvider>();
+
+    final Color appBarTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
 
     return Scaffold(
       backgroundColor: isDark ? MedColors.slateDark : MedColors.lightBg,
@@ -466,87 +537,98 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: appBarTextColor,
+        iconTheme: IconThemeData(color: appBarTextColor),
+        actionsIconTheme: IconThemeData(color: appBarTextColor),
         systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                AppTranslations.get(context, "Afada Medical"),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 23,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.6,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+        leadingWidth: 66,
+        titleSpacing: 6,
+        leading: Builder(
+          builder: (scaffoldContext) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: _buildAppBarButton(
+                  isDark: isDark,
+                  icon: Icons.menu_rounded,
+                  iconColor: isDark ? Colors.white : const Color(0xFF0F172A),
+                  tooltip: AppTranslations.get(context, "Menyu"),
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    Scaffold.of(scaffoldContext).openDrawer();
+                  },
                 ),
               ),
-            ),
-            Consumer<OrderProvider>(
-              builder: (context, orderProvider, child) {
-                final count = orderProvider.orders.where((o) => o.status != "Sotildi").length;
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.06)
-                            : MedColors.primaryBlue.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isDark ? Colors.white12 : MedColors.primaryBlue.withValues(alpha: 0.15),
-                        ),
-                      ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
+            );
+          },
+        ),
+        title: Text(
+          AppTranslations.get(context, "Afada Medical"),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.6,
+            color: appBarTextColor,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Consumer<OrderProvider>(
+                builder: (context, orderProvider, child) {
+                  final count = orderProvider.orders.where((o) => o.status != "Sotildi").length;
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _buildAppBarButton(
+                        isDark: isDark,
+                        icon: Icons.notifications_none_rounded,
+                        iconColor: isDark ? Colors.white : MedColors.primaryBlue,
+                        tooltip: AppTranslations.get(context, "Bildirishnomalar"),
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const DraverBuyurtmalarPages()),
                           );
                         },
-                        icon: Icon(
-                          Icons.notifications_none_rounded,
-                          size: 22,
-                          color: isDark ? Colors.white : MedColors.primaryBlue,
-                        ),
                       ),
-                    ),
-                    if (count > 0)
-                      Positioned(
-                        top: -3,
-                        right: -3,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: MedColors.rose,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isDark ? MedColors.slateDark : Colors.white,
-                              width: 2,
+                      if (count > 0)
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: MedColors.rose,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isDark ? MedColors.slateDark : MedColors.lightBg,
+                                width: 2,
+                              ),
                             ),
-                          ),
-                          constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                          child: Text(
-                            count > 9 ? "9+" : count.toString(),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                            constraints: const BoxConstraints(minWidth: 19, minHeight: 19),
+                            child: Text(
+                              count > 9 ? "9+" : count.toString(),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       body: ScaleTransition(
         scale: _scaleAnimation,
@@ -575,83 +657,95 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     return SafeArea(
       top: false,
       minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final double width = constraints.maxWidth;
-          final double horizontalPadding = width < 360 ? 6 : width < 430 ? 8 : 12;
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        heightFactor: 1,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 540),
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final double width = constraints.maxWidth;
+              final double horizontalPadding = width < 360 ? 6 : width < 430 ? 8 : 12;
 
-          final Color navBg = isDark
-              ? const Color(0xFF1C2541).withValues(alpha: 0.88)
-              : Colors.white.withValues(alpha: 0.90);
+              final Color navBg = isDark
+                  ? const Color(0xFF1C2541).withValues(alpha: 0.90)
+                  : Colors.white.withValues(alpha: 0.95);
 
-          final Color navBorder = isDark
-              ? const Color(0xFF3A506B).withValues(alpha: 0.5)
-              : const Color(0xFFE2E8F0);
+              final Color navBorder = isDark
+                  ? const Color(0xFF3A506B).withValues(alpha: 0.55)
+                  : const Color(0xFFCBD5E1);
 
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(38),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
+              return Container(
                 decoration: BoxDecoration(
-                  color: navBg,
                   borderRadius: BorderRadius.circular(38),
-                  border: Border.all(color: navBorder, width: 1.2),
                   boxShadow: [
                     BoxShadow(
                       color: isDark
-                          ? Colors.black.withValues(alpha: 0.40)
-                          : MedColors.primaryBlue.withValues(alpha: 0.10),
-                      blurRadius: 28,
+                          ? Colors.black.withValues(alpha: 0.42)
+                          : const Color(0xFF0F172A).withValues(alpha: 0.10),
+                      blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildNavItem(
-                        index: 0,
-                        icon: Icons.home_outlined,
-                        activeIcon: Icons.home_rounded,
-                        labelKey: "Home",
-                        isDark: isDark,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(38),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: navBg,
+                        borderRadius: BorderRadius.circular(38),
+                        border: Border.all(color: navBorder, width: 1.2),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildNavItem(
+                              index: 0,
+                              icon: Icons.home_outlined,
+                              activeIcon: Icons.home_rounded,
+                              labelKey: "Home",
+                              isDark: isDark,
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildNavItem(
+                              index: 1,
+                              icon: Icons.assignment_turned_in_outlined,
+                              activeIcon: Icons.assignment_turned_in_rounded,
+                              labelKey: "Ombor",
+                              isDark: isDark,
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildNavItem(
+                              index: 2,
+                              icon: Icons.people_outline_rounded,
+                              activeIcon: Icons.people_rounded,
+                              labelKey: "Ishchilar",
+                              isDark: isDark,
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildNavItem(
+                              index: 3,
+                              icon: Icons.medication_outlined,
+                              activeIcon: Icons.medication_rounded,
+                              labelKey: "Mahsulot",
+                              isDark: isDark,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Expanded(
-                      child: _buildNavItem(
-                        index: 1,
-                        icon: Icons.assignment_turned_in_outlined,
-                        activeIcon: Icons.assignment_turned_in_rounded,
-                        labelKey: "Ombor",
-                        isDark: isDark,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildNavItem(
-                        index: 2,
-                        icon: Icons.people_outline_rounded,
-                        activeIcon: Icons.people_rounded,
-                        labelKey: "Ishchilar",
-                        isDark: isDark,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildNavItem(
-                        index: 3,
-                        icon: Icons.medication_outlined,
-                        activeIcon: Icons.medication_rounded,
-                        labelKey: "Mahsulot",
-                        isDark: isDark,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -664,38 +758,42 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     required bool isDark,
   }) {
     final bool isSelected = _currentIndex == index;
+    final Color activeColor = isDark ? MedColors.skyBlue : MedColors.primaryBlue;
+    final Color inactiveColor = isDark ? Colors.white60 : const Color(0xFF475569);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => _changePage(index),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 240),
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 240),
               curve: Curves.easeOutCubic,
               width: isSelected ? 52 : 44,
-              height: isSelected ? 38 : 34,
+              height: isSelected ? 36 : 34,
               decoration: BoxDecoration(
-                color: isSelected ? MedColors.primaryBlue.withValues(alpha: 0.18) : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-                border: isSelected ? Border.all(color: MedColors.primaryBlue.withValues(alpha: 0.25)) : null,
+                color: isSelected
+                    ? activeColor.withValues(alpha: isDark ? 0.20 : 0.13)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(18),
+                border: isSelected
+                    ? Border.all(color: activeColor.withValues(alpha: isDark ? 0.35 : 0.24))
+                    : null,
               ),
               child: Center(
                 child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
+                  duration: const Duration(milliseconds: 220),
                   transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
                   child: Icon(
                     isSelected ? activeIcon : icon,
                     key: ValueKey<bool>(isSelected),
                     size: isSelected ? 23 : 21,
-                    color: isSelected
-                        ? MedColors.primaryBlue
-                        : (isDark ? Colors.white54 : const Color(0xFF64748B)),
+                    color: isSelected ? activeColor : inactiveColor,
                   ),
                 ),
               ),
@@ -704,12 +802,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               style: TextStyle(
-                color: isSelected
-                    ? MedColors.primaryBlue
-                    : (isDark ? Colors.white54 : const Color(0xFF64748B)),
+                color: isSelected ? activeColor : inactiveColor,
                 fontSize: 10.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                height: 1,
+                height: 1.05,
               ),
               child: Text(
                 AppTranslations.get(context, labelKey),
@@ -727,8 +823,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final String? path = profile.imagePath?.trim();
     Widget fallback = Icon(
       Icons.person_rounded,
-      size: 32,
-      color: isDark ? Colors.white70 : Colors.grey,
+      size: 30,
+      color: isDark ? Colors.white70 : const Color(0xFF475569),
     );
 
     Widget imageWidget = fallback;
@@ -757,7 +853,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: MedColors.primaryBlue.withValues(alpha: 0.6),
+          color: (isDark ? MedColors.skyBlue : MedColors.primaryBlue).withValues(alpha: 0.65),
           width: 2,
         ),
         color: isDark ? const Color(0xFF3A506B) : const Color(0xFFE2E8F0),
@@ -769,65 +865,87 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget _buildPremiumDrawer(BuildContext context, bool isDark) {
     return Drawer(
       backgroundColor: isDark ? MedColors.cardDark : Colors.white,
+      surfaceTintColor: Colors.transparent,
       child: Consumer<ProfileProvider>(
         builder: (context, profile, child) {
           final isWorker = profile.role.trim().toLowerCase() == "ishchi";
+          final fullName = "${profile.displayName} ${profile.displaySurname}".trim();
 
           return SafeArea(
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                  child: Row(
-                    children: [
-                      _buildDrawerAvatar(profile, isDark),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${profile.displayName} ${profile.displaySurname}".trim().isEmpty
-                                  ? "Foydalanuvchi"
-                                  : "${profile.displayName} ${profile.displaySurname}",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
-                              decoration: BoxDecoration(
-                                color: MedColors.primaryBlue.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                profile.role.toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w900,
-                                  color: MedColors.primaryBlue,
-                                  letterSpacing: 0.5,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.04)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        _buildDrawerAvatar(profile, isDark),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                fullName.isEmpty
+                                    ? AppTranslations.get(context, "Foydalanuvchi")
+                                    : fullName,
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                                decoration: BoxDecoration(
+                                  color: (isDark ? MedColors.skyBlue : MedColors.primaryBlue)
+                                      .withValues(alpha: isDark ? 0.18 : 0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  profile.role.toUpperCase(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: isDark ? MedColors.skyBlue : MedColors.primaryBlue,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 Divider(
-                  color: isDark ? const Color(0xFF3A506B).withValues(alpha: 0.4) : const Color(0xFFE2E8F0),
+                  color: isDark
+                      ? const Color(0xFF3A506B).withValues(alpha: 0.45)
+                      : const Color(0xFFE2E8F0),
                   height: 1,
                 ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     children: [
                       _drawerTile(Icons.account_circle_outlined, "Profil", const DraverProfilPages(), isDark),
                       if (isWorker)
@@ -849,29 +967,35 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: InkWell(
+                  padding: const EdgeInsets.fromLTRB(14, 6, 14, 14),
+                  child: Material(
+                    color: MedColors.rose.withValues(alpha: isDark ? 0.14 : 0.09),
                     borderRadius: BorderRadius.circular(18),
-                    onTap: () => _showLogoutDialog(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: MedColors.rose.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.logout_rounded, color: MedColors.rose, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            AppTranslations.get(context, "Chiqish"),
-                            style: const TextStyle(
-                              color: MedColors.rose,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: () => _showLogoutDialog(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: MedColors.rose.withValues(alpha: isDark ? 0.30 : 0.24),
                           ),
-                        ],
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.logout_rounded, color: MedColors.rose, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              AppTranslations.get(context, "Chiqish"),
+                              style: const TextStyle(
+                                color: MedColors.rose,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -885,32 +1009,38 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _drawerTile(IconData icon, String titleKey, Widget page, bool isDark) {
+    final Color accent = isDark ? MedColors.skyBlue : MedColors.primaryBlue;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 2.5),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        hoverColor: accent.withValues(alpha: 0.08),
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8.5),
           decoration: BoxDecoration(
-            color: (isDark ? MedColors.skyBlue : MedColors.primaryBlue).withValues(alpha: 0.12),
+            color: accent.withValues(alpha: isDark ? 0.14 : 0.10),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            size: 23,
-            color: isDark ? MedColors.skyBlue : MedColors.primaryBlue,
-          ),
+          child: Icon(icon, size: 22, color: accent),
         ),
         title: Text(
           AppTranslations.get(context, titleKey),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 15.5,
             fontWeight: FontWeight.w700,
             color: isDark ? Colors.white : const Color(0xFF0F172A),
           ),
         ),
+        trailing: Icon(
+          Icons.chevron_right_rounded,
+          size: 20,
+          color: isDark ? Colors.white24 : const Color(0xFF94A3B8),
+        ),
         onTap: () {
+          Navigator.pop(context);
           Navigator.push(context, MaterialPageRoute(builder: (context) => page));
         },
       ),
@@ -925,41 +1055,58 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 2.5),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8.5),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.04),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 23, color: isDark ? Colors.white38 : Colors.black38),
+          child: Icon(
+            icon,
+            size: 22,
+            color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+          ),
         ),
         title: Text(
           title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 15.5,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white38 : Colors.black45,
+            color: isDark ? Colors.white38 : const Color(0xFF64748B),
           ),
         ),
         trailing: Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.05),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.06)
+                : const Color(0xFFF1F5F9),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.lock_rounded, size: 14, color: isDark ? Colors.white38 : Colors.black45),
+          child: Icon(
+            Icons.lock_rounded,
+            size: 14,
+            color: isDark ? Colors.white38 : const Color(0xFF64748B),
+          ),
         ),
         onTap: () {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
               SnackBar(
-                content: Text(message),
-                backgroundColor: const Color(0xFF1E293B),
+                content: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                backgroundColor: const Color(0xFF0F172A),
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
@@ -971,7 +1118,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 }
 
 // ============================================================
-// DASHBOARD HOMEPAGES BODY (RESPONSIVE + ZERO OVERFLOW)
+// DASHBOARD HOMEPAGES BODY (RESPONSIVE + LIGHT/DARK BALANCED)
 // ============================================================
 class HomePages extends StatelessWidget {
   final RefreshCallback? onRefresh;
@@ -1003,7 +1150,7 @@ class HomePages extends StatelessWidget {
               ),
             ],
           ),
-          backgroundColor: const Color(0xFF1E293B),
+          backgroundColor: const Color(0xFF0F172A),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           duration: const Duration(seconds: 2),
@@ -1014,33 +1161,33 @@ class HomePages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final ishchiProvider = context.watch<IshchiProvider>();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       // QARZDORLIK KARTASIDEK TO'LIQ BLUR + QULF FLOATING BUTTON
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 105),
+        padding: const EdgeInsets.only(bottom: 102),
         child: Container(
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.black.withValues(alpha: 0.42)
-                    : MedColors.primaryBlue.withValues(alpha: 0.28),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                    ? Colors.black.withValues(alpha: 0.45)
+                    : const Color(0xFF0F172A).withValues(alpha: 0.22),
+                blurRadius: 18,
+                offset: const Offset(0, 7),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(22),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Blur ostida ko'rinib turadigan asosiy "+" tugma
                 Container(
                   width: 60,
                   height: 60,
@@ -1053,22 +1200,21 @@ class HomePages extends StatelessWidget {
                   ),
                   child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
                 ),
-                // To'liq blur qilingan shisha qatlam + markazdagi qulf ikonkasi
                 Positioned.fill(
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 5.5, sigmaY: 5.5),
                     child: Material(
                       color: isDark
                           ? Colors.black.withValues(alpha: 0.58)
-                          : Colors.black.withValues(alpha: 0.36),
+                          : const Color(0xFF0F172A).withValues(alpha: 0.46),
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(22),
                         onTap: () => _showComingSoonSnackBar(context),
                         child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(22),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.22),
+                              color: Colors.white.withValues(alpha: 0.28),
                               width: 1.2,
                             ),
                           ),
@@ -1076,7 +1222,7 @@ class HomePages extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(9),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.16),
+                                color: Colors.white.withValues(alpha: 0.20),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -1102,189 +1248,250 @@ class HomePages extends StatelessWidget {
         backgroundColor: isDark ? MedColors.cardDark : Colors.white,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-          padding: const EdgeInsets.only(bottom: 110),
-          child: Column(
-            children: [
-              _buildDateHeader(context, isDark),
-              Consumer5<OrderProvider, ProfileProvider, MahsulotProvider, QarzProvider, FinishedProductProvider>(
-                builder: (context, orderProvider, profileProvider, mahsulotProvider, qarzProvider, finishedProductProvider, child) {
-                  final now = DateTime.now();
-                  final bool isAdmin = profileProvider.role.trim().toLowerCase() == "admin";
-                  final bool isWorker = profileProvider.role.trim().toLowerCase() == "ishchi";
-                  final String currentUserName =
-                  "${profileProvider.displayName} ${profileProvider.displaySurname}".trim().toLowerCase();
+          padding: const EdgeInsets.only(bottom: 112),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
+              child: Column(
+                children: [
+                  _buildDateHeader(context, isDark),
+                  Consumer5<OrderProvider, ProfileProvider, MahsulotProvider, QarzProvider, FinishedProductProvider>(
+                    builder: (
+                        context,
+                        orderProvider,
+                        profileProvider,
+                        mahsulotProvider,
+                        qarzProvider,
+                        finishedProductProvider,
+                        child,
+                        ) {
+                      final now = DateTime.now();
+                      final bool isAdmin = profileProvider.role.trim().toLowerCase() == "admin";
+                      final bool isWorker = profileProvider.role.trim().toLowerCase() == "ishchi";
+                      final String currentUserName =
+                      "${profileProvider.displayName} ${profileProvider.displaySurname}".trim().toLowerCase();
+                      final String unitTa = AppTranslations.get(context, "ta");
+                      final String unitUzs = AppTranslations.get(context, "UZS");
 
-                  bool isMySale(OrderModel order) {
-                    if (isAdmin) return true;
-                    final createdBy = order.createdBy;
-                    if (createdBy == null) return false;
-                    final createdByName =
-                    (createdBy["fullName"] ?? createdBy["full_name"] ?? "").toString().trim().toLowerCase();
-                    return createdByName == currentUserName;
-                  }
+                      bool isMySale(OrderModel order) {
+                        if (isAdmin) return true;
+                        final createdBy = order.createdBy;
+                        if (createdBy == null) return false;
+                        final createdByName =
+                        (createdBy["fullName"] ?? createdBy["full_name"] ?? "").toString().trim().toLowerCase();
+                        return createdByName == currentUserName;
+                      }
 
-                  final myFinishedProducts = isAdmin
-                      ? finishedProductProvider.finishedProducts
-                      : finishedProductProvider.finishedProducts.where((item) {
-                    return (item.createdByName ?? "").trim().toLowerCase() == currentUserName;
-                  }).toList();
+                      final myFinishedProducts = isAdmin
+                          ? finishedProductProvider.finishedProducts
+                          : finishedProductProvider.finishedProducts.where((item) {
+                        return (item.createdByName ?? "").trim().toLowerCase() == currentUserName;
+                      }).toList();
 
-                  final myFinishedProductCount = myFinishedProducts.fold(0, (sum, item) => sum + item.quantity);
+                      final int myFinishedProductCount =
+                      myFinishedProducts.fold(0, (sum, item) => sum + item.quantity);
 
-                  final todayOrders = orderProvider.orders
-                      .where((o) =>
-                  isMySale(o) &&
-                      (o.status == "Sotildi" || o.paymentStatus == "To'langan") &&
-                      o.date.year == now.year &&
-                      o.date.month == now.month &&
-                      o.date.day == now.day)
-                      .toList();
+                      final todayOrders = orderProvider.orders.where((o) {
+                        final localDate = o.date.toLocal();
+                        return isMySale(o) &&
+                            (o.status == "Sotildi" || o.paymentStatus == "To'langan") &&
+                            localDate.year == now.year &&
+                            localDate.month == now.month &&
+                            localDate.day == now.day;
+                      }).toList();
 
-                  double todayRevenue = 0;
-                  if (isWorker) {
-                    todayRevenue = finishedProductProvider.finishedProducts.where((item) {
-                      final createdAt = item.createdAt;
-                      if (createdAt == null) return false;
-                      return (item.createdByName ?? "").trim().toLowerCase() == currentUserName &&
-                          createdAt.year == now.year &&
-                          createdAt.month == now.month &&
-                          createdAt.day == now.day;
-                    }).fold<double>(0, (sum, item) => sum + item.quantity);
-                  } else {
-                    todayRevenue = todayOrders.fold(
-                      0.0,
-                          (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid),
-                    );
-                  }
+                      double todayRevenue = 0;
+                      if (isWorker) {
+                        todayRevenue = finishedProductProvider.finishedProducts.where((item) {
+                          final createdAt = item.createdAt?.toLocal();
+                          if (createdAt == null) return false;
+                          return (item.createdByName ?? "").trim().toLowerCase() == currentUserName &&
+                              createdAt.year == now.year &&
+                              createdAt.month == now.month &&
+                              createdAt.day == now.day;
+                        }).fold<double>(0, (sum, item) => sum + item.quantity);
+                      } else {
+                        todayRevenue = todayOrders.fold(
+                          0.0,
+                              (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid),
+                        );
+                      }
 
-                  final int todayProductsCount = todayOrders.fold(0, (sum, o) => sum + o.quantity);
-                  final int todayTasksCount = todayOrders.length;
+                      final int todayProductsCount = todayOrders.fold(0, (sum, o) => sum + o.quantity);
+                      final int todayTasksCount = todayOrders.length;
 
-                  final monthlyOrders = orderProvider.orders
-                      .where((o) =>
-                  isMySale(o) &&
-                      (o.status == "Sotildi" || o.paymentStatus == "To'langan") &&
-                      o.date.year == now.year &&
-                      o.date.month == now.month)
-                      .toList();
+                      final monthlyOrders = orderProvider.orders.where((o) {
+                        final localDate = o.date.toLocal();
+                        return isMySale(o) &&
+                            (o.status == "Sotildi" || o.paymentStatus == "To'langan") &&
+                            localDate.year == now.year &&
+                            localDate.month == now.month;
+                      }).toList();
 
-                  final double monthlyRevenue = monthlyOrders.fold(
-                    0.0,
-                        (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid),
-                  );
-                  final int monthlyProductsCount = monthlyOrders.fold(0, (sum, o) => sum + o.quantity);
-                  final int monthlyTasksCount = monthlyOrders.length;
+                      double monthlyRevenue = 0;
+                      if (isWorker) {
+                        monthlyRevenue = finishedProductProvider.finishedProducts.where((item) {
+                          final createdAt = item.createdAt?.toLocal();
+                          if (createdAt == null) return false;
+                          return (item.createdByName ?? "").trim().toLowerCase() == currentUserName &&
+                              createdAt.year == now.year &&
+                              createdAt.month == now.month;
+                        }).fold<double>(0, (sum, item) => sum + item.quantity);
+                      } else {
+                        monthlyRevenue = monthlyOrders.fold(
+                          0.0,
+                              (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid),
+                        );
+                      }
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        // 2x2 STATS (ZERO OVERFLOW, CLEAN VERTICAL SUB-METRICS)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildStatCard(
-                                context,
-                                titleKey: "Kunlik daromad",
-                                icon: Icons.insights_rounded,
-                                iconColor: MedColors.green,
-                                mainValue: isWorker
-                                    ? "${todayRevenue.toInt()} ta"
-                                    : "${_formatMoney(todayRevenue)} ${AppTranslations.get(context, "UZS")}",
-                                subLabel1: "Sotildi:",
-                                subVal1: "$todayProductsCount",
-                                subLabel2: "Buyurtmalar:",
-                                subVal2: "$todayTasksCount",
-                                page: KunlikDaromadPages(),
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildStatCard(
-                                context,
-                                titleKey: "Ishchilar",
-                                icon: Icons.badge_outlined,
-                                iconColor: MedColors.primaryBlue,
-                                mainValue: "$myFinishedProductCount ta",
-                                subLabel1: "Ishchilar soni:",
-                                subVal1: "${IshchiDatabase.ishchilar.length}",
-                                subLabel2: "Tayyorlandi:",
-                                subVal2: "$myFinishedProductCount",
-                                page: IshchilarIshhaqqiPages(),
-                                isDark: isDark,
-                              ),
-                            ),
-                          ],
+                      final int monthlyProductsCount = monthlyOrders.fold(0, (sum, o) => sum + o.quantity);
+                      final int monthlyTasksCount = monthlyOrders.length;
+
+                      final int workersCount = ishchiProvider.ishchilar.isNotEmpty
+                          ? ishchiProvider.ishchilar.length
+                          : IshchiDatabase.ishchilar.length;
+
+                      final Widget dailyCard = _buildStatCard(
+                        context,
+                        titleKey: "Kunlik daromad",
+                        icon: Icons.insights_rounded,
+                        iconColor: MedColors.green,
+                        mainValue: isWorker
+                            ? "${todayRevenue.toInt()} $unitTa"
+                            : "${_formatMoney(todayRevenue)} $unitUzs",
+                        subLabel1: isWorker ? "Tayyorlandi:" : "Sotildi:",
+                        subVal1: isWorker ? "${todayRevenue.toInt()}" : "$todayProductsCount",
+                        subLabel2: "Buyurtmalar:",
+                        subVal2: "$todayTasksCount",
+                        page: KunlikDaromadPages(),
+                        isDark: isDark,
+                      );
+
+                      final Widget workersCard = _buildStatCard(
+                        context,
+                        titleKey: "Ishchilar",
+                        icon: Icons.badge_outlined,
+                        iconColor: MedColors.primaryBlue,
+                        mainValue: "$myFinishedProductCount $unitTa",
+                        subLabel1: "Ishchilar soni:",
+                        subVal1: "$workersCount",
+                        subLabel2: "Tayyorlandi:",
+                        subVal2: "$myFinishedProductCount",
+                        page: IshchilarIshhaqqiPages(),
+                        isDark: isDark,
+                      );
+
+                      final Widget monthlyCard = _buildStatCard(
+                        context,
+                        titleKey: "Oylik daromad",
+                        icon: Icons.show_chart_rounded,
+                        iconColor: MedColors.skyBlue,
+                        mainValue: isWorker
+                            ? "${monthlyRevenue.toInt()} $unitTa"
+                            : "${_formatMoney(monthlyRevenue)} $unitUzs",
+                        subLabel1: isWorker ? "Tayyorlandi:" : "Sotildi:",
+                        subVal1: isWorker ? "${monthlyRevenue.toInt()}" : "$monthlyProductsCount",
+                        subLabel2: "Buyurtmalar:",
+                        subVal2: "$monthlyTasksCount",
+                        page: OylikDaromadPages(),
+                        isDark: isDark,
+                      );
+
+                      final Widget debtCard = _buildLockedOverlay(
+                        context,
+                        borderRadius: 24,
+                        child: _buildStatCard(
+                          context,
+                          titleKey: "Qarzdorlik",
+                          icon: Icons.account_balance_wallet_outlined,
+                          iconColor: MedColors.rose,
+                          mainValue: "${_formatMoney(qarzProvider.jamiQarz)} $unitUzs",
+                          subLabel1: "Qarzdorlar:",
+                          subVal1: "${qarzProvider.qarzdorlarSoni}",
+                          subLabel2: "Jami qarzdorlik",
+                          subVal2: "",
+                          isDebt: true,
+                          page: const QarzdorlikPages(),
+                          isDark: isDark,
                         ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildStatCard(
-                                context,
-                                titleKey: "Oylik daromad",
-                                icon: Icons.show_chart_rounded,
-                                iconColor: MedColors.skyBlue,
-                                mainValue: "${_formatMoney(monthlyRevenue)} ${AppTranslations.get(context, "UZS")}",
-                                subLabel1: "Sotildi:",
-                                subVal1: "$monthlyProductsCount",
-                                subLabel2: "Buyurtmalar:",
-                                subVal2: "$monthlyTasksCount",
-                                page: OylikDaromadPages(),
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildLockedOverlay(
-                                context,
-                                borderRadius: 24,
-                                child: _buildStatCard(
+                      );
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final bool isWide = constraints.maxWidth >= 720;
+
+                            return Column(
+                              children: [
+                                if (isWide)
+                                  IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Expanded(child: dailyCard),
+                                        const SizedBox(width: 12),
+                                        Expanded(child: workersCard),
+                                        const SizedBox(width: 12),
+                                        Expanded(child: monthlyCard),
+                                        const SizedBox(width: 12),
+                                        Expanded(child: debtCard),
+                                      ],
+                                    ),
+                                  )
+                                else ...[
+                                  IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Expanded(child: dailyCard),
+                                        const SizedBox(width: 10),
+                                        Expanded(child: workersCard),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Expanded(child: monthlyCard),
+                                        const SizedBox(width: 10),
+                                        Expanded(child: debtCard),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 16),
+                                // WEEKLY WAVE CHART
+                                _buildWeeklyRevenueChart(
                                   context,
-                                  titleKey: "Qarzdorlik",
-                                  icon: Icons.account_balance_wallet_outlined,
-                                  iconColor: MedColors.rose,
-                                  mainValue:
-                                  "${_formatMoney(qarzProvider.jamiQarz)} ${AppTranslations.get(context, "UZS")}",
-                                  subLabel1: "Qarzdorlar:",
-                                  subVal1: "${qarzProvider.qarzdorlarSoni}",
-                                  subLabel2: "Jami qarzdorlik",
-                                  subVal2: "",
-                                  isDebt: true,
-                                  page: const QarzdorlikPages(),
-                                  isDark: isDark,
+                                  orderProvider,
+                                  profileProvider,
+                                  mahsulotProvider,
+                                  finishedProductProvider,
+                                  isDark,
                                 ),
-                              ),
-                            ),
-                          ],
+                                const SizedBox(height: 16),
+                                // MONTHLY / YEARLY WAVE CHARTS
+                                _buildChartTabBarSection(
+                                  context,
+                                  orderProvider,
+                                  profileProvider,
+                                  mahsulotProvider,
+                                  finishedProductProvider,
+                                  isDark,
+                                ),
+                              ],
+                            );
+                          },
                         ),
-                        const SizedBox(height: 16),
-                        // WEEKLY WAVE CHART
-                        _buildWeeklyRevenueChart(
-                          context,
-                          orderProvider,
-                          profileProvider,
-                          mahsulotProvider,
-                          finishedProductProvider,
-                          isDark,
-                        ),
-                        const SizedBox(height: 16),
-                        // MONTHLY / YEARLY WAVE CHARTS
-                        _buildChartTabBarSection(
-                          context,
-                          orderProvider,
-                          profileProvider,
-                          mahsulotProvider,
-                          finishedProductProvider,
-                          isDark,
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1317,32 +1524,47 @@ class HomePages extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         decoration: BoxDecoration(
           color: isDark ? MedColors.cardDark : Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
           ),
           boxShadow: [
             BoxShadow(
               color: isDark
-                  ? Colors.black.withValues(alpha: 0.22)
-                  : const Color(0xFF64748B).withValues(alpha: 0.06),
-              blurRadius: 18,
-              offset: const Offset(0, 5),
+                  ? Colors.black.withValues(alpha: 0.24)
+                  : const Color(0xFF0F172A).withValues(alpha: 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.calendar_month_rounded, size: 22, color: MedColors.primaryBlue),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: MedColors.primaryBlue.withValues(alpha: isDark ? 0.18 : 0.10),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.calendar_month_rounded,
+                size: 19,
+                color: isDark ? MedColors.skyBlue : MedColors.primaryBlue,
+              ),
+            ),
             const SizedBox(width: 10),
-            Text(
-              formattedDate,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.3,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+            Flexible(
+              child: Text(
+                formattedDate,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 17.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.3,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
               ),
             ),
           ],
@@ -1368,121 +1590,108 @@ class HomePages extends StatelessWidget {
         required bool isDark,
         bool isDebt = false,
       }) {
-    return InkWell(
+    return Material(
+      color: isDark ? MedColors.cardDark : Colors.white,
       borderRadius: BorderRadius.circular(24),
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => page)),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isDark ? MedColors.cardDark : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => page)),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.25)
+                    : const Color(0xFF0F172A).withValues(alpha: 0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.25)
-                  : const Color(0xFF64748B).withValues(alpha: 0.05),
-              blurRadius: 16,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 20),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 13,
-                  color: isDark ? Colors.white24 : Colors.black26,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              AppTranslations.get(context, titleKey),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white70 : const Color(0xFF475569),
-              ),
-            ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                mainValue,
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                  color: isDebt
-                      ? MedColors.rose
-                      : (isDark ? Colors.white : const Color(0xFF0F172A)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Flexible(
-                        child: Text(
-                          AppTranslations.get(context, subLabel1),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                          ),
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: iconColor.withValues(alpha: isDark ? 0.16 : 0.12),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        child: Icon(icon, color: iconColor, size: 20),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        subVal1,
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
-                        ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 13,
+                        color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                       ),
                     ],
                   ),
-                  if (subLabel2.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                  const SizedBox(height: 12),
+                  Text(
+                    AppTranslations.get(context, titleKey),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white70 : const Color(0xFF475569),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      mainValue,
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                        color: isDebt
+                            ? MedColors.rose
+                            : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7.5),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Flexible(
                           child: Text(
-                            AppTranslations.get(context, subLabel2),
+                            AppTranslations.get(context, subLabel1),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -1494,7 +1703,7 @@ class HomePages extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          subVal2,
+                          subVal1,
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w800,
@@ -1503,11 +1712,42 @@ class HomePages extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (subLabel2.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              AppTranslations.get(context, subLabel2),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                          if (subVal2.isNotEmpty) ...[
+                            const SizedBox(width: 4),
+                            Text(
+                              subVal2,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1524,17 +1764,19 @@ class HomePages extends StatelessWidget {
       ) {
     final now = DateTime.now();
     final bool isAdmin = profileProvider.role.trim().toLowerCase() == "admin";
+    final bool isWorker = !isAdmin && profileProvider.role.trim().toLowerCase() == "ishchi";
     final String currentUserName =
     "${profileProvider.displayName} ${profileProvider.displaySurname}".trim().toLowerCase();
 
     final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
 
     final data = List.generate(7, (i) {
-      final date = DateTime(firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day).add(Duration(days: i));
+      final date = DateTime(firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day)
+          .add(Duration(days: i));
 
-      if (!isAdmin && profileProvider.role.trim().toLowerCase() == "ishchi") {
+      if (isWorker) {
         return finishedProductProvider.finishedProducts.where((item) {
-          final createdAt = item.createdAt;
+          final createdAt = item.createdAt?.toLocal();
           if (createdAt == null) return false;
           return (item.createdByName ?? "").trim().toLowerCase() == currentUserName &&
               createdAt.year == date.year &&
@@ -1544,18 +1786,33 @@ class HomePages extends StatelessWidget {
       }
 
       return orderProvider.orders.where((o) {
-        if (o.date.year != date.year || o.date.month != date.month || o.date.day != date.day) return false;
+        final localDate = o.date.toLocal();
+        if (localDate.year != date.year ||
+            localDate.month != date.month ||
+            localDate.day != date.day) {
+          return false;
+        }
         if (o.paymentStatus != "To'langan" && o.status != "Sotildi") return false;
         if (isAdmin) return true;
         final createdBy = o.createdBy;
         if (createdBy == null) return false;
-        return (createdBy["fullName"] ?? createdBy["full_name"] ?? "").toString().trim().toLowerCase() ==
+        return (createdBy["fullName"] ?? createdBy["full_name"] ?? "")
+            .toString()
+            .trim()
+            .toLowerCase() ==
             currentUserName;
-      }).fold<double>(0, (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid));
+      }).fold<double>(
+        0,
+            (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid),
+      );
     });
 
-    final labels = ['Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha', 'Yak'];
-    final bool isWorker = !isAdmin && profileProvider.role.trim().toLowerCase() == "ishchi";
+    const weekdayMap = {
+      "Uzb": ['Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha', 'Yak'],
+      "Rus": ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+      "Kiril": ['Ду', 'Се', 'Чо', 'Па', 'Жу', 'Ша', 'Як'],
+    };
+    final labels = weekdayMap[profileProvider.language] ?? weekdayMap["Uzb"]!;
 
     return _buildChartCard(
       context,
@@ -1564,9 +1821,11 @@ class HomePages extends StatelessWidget {
         context,
         data,
         labels,
-        MedColors.skyBlue,
+        isDark ? MedColors.skyBlue : MedColors.primaryBlue,
         isDark,
-        unit: isWorker ? "ta" : AppTranslations.get(context, "UZS"),
+        unit: isWorker
+            ? AppTranslations.get(context, "ta")
+            : AppTranslations.get(context, "UZS"),
       ),
       isDark: isDark,
     );
@@ -1586,14 +1845,23 @@ class HomePages extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            height: 42,
+            height: 46,
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: isDark ? MedColors.cardDark : const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(22),
+              color: isDark ? MedColors.cardDark : Colors.white,
+              borderRadius: BorderRadius.circular(23),
               border: Border.all(
                 color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
               ),
+              boxShadow: isDark
+                  ? null
+                  : [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: TabBar(
               dividerColor: Colors.transparent,
@@ -1603,15 +1871,16 @@ class HomePages extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: MedColors.primaryBlue.withValues(alpha: 0.35),
+                    color: MedColors.primaryBlue.withValues(alpha: 0.30),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
                 ],
               ),
               labelColor: Colors.white,
-              unselectedLabelColor: isDark ? Colors.white54 : const Color(0xFF64748B),
-              labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5),
+              unselectedLabelColor: isDark ? Colors.white60 : const Color(0xFF475569),
+              labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
               tabs: [
                 Tab(text: AppTranslations.get(context, "Oylik")),
                 Tab(text: AppTranslations.get(context, "Yillik")),
@@ -1620,11 +1889,18 @@ class HomePages extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 320,
+            height: 316,
             child: TabBarView(
               physics: const BouncingScrollPhysics(),
               children: [
-                _buildMonthlyRevenueChart(context, orderProvider, profileProvider, mahsulotProvider, isDark),
+                _buildMonthlyRevenueChart(
+                  context,
+                  orderProvider,
+                  profileProvider,
+                  mahsulotProvider,
+                  finishedProductProvider,
+                  isDark,
+                ),
                 _buildYearlyRevenueChart(
                   context,
                   orderProvider,
@@ -1646,6 +1922,7 @@ class HomePages extends StatelessWidget {
       OrderProvider orderProvider,
       ProfileProvider profileProvider,
       MahsulotProvider mahsulotProvider,
+      FinishedProductProvider finishedProductProvider,
       bool isDark,
       ) {
     final now = DateTime.now();
@@ -1660,9 +1937,8 @@ class HomePages extends StatelessWidget {
       final date = DateTime(now.year, now.month, i + 1);
 
       if (isWorker) {
-        final finishedProductProvider = context.read<FinishedProductProvider>();
         return finishedProductProvider.finishedProducts.where((item) {
-          final createdAt = item.createdAt;
+          final createdAt = item.createdAt?.toLocal();
           if (createdAt == null) return false;
           return (item.createdByName ?? "").trim().toLowerCase() == currentUserName &&
               createdAt.year == date.year &&
@@ -1672,14 +1948,25 @@ class HomePages extends StatelessWidget {
       }
 
       return orderProvider.orders.where((o) {
-        if (o.date.year != date.year || o.date.month != date.month || o.date.day != date.day) return false;
+        final localDate = o.date.toLocal();
+        if (localDate.year != date.year ||
+            localDate.month != date.month ||
+            localDate.day != date.day) {
+          return false;
+        }
         if (o.paymentStatus != "To'langan" && o.status != "Sotildi") return false;
         if (isAdmin) return true;
         final createdBy = o.createdBy;
         if (createdBy == null) return false;
-        return (createdBy["fullName"] ?? createdBy["full_name"] ?? "").toString().trim().toLowerCase() ==
+        return (createdBy["fullName"] ?? createdBy["full_name"] ?? "")
+            .toString()
+            .trim()
+            .toLowerCase() ==
             currentUserName;
-      }).fold<double>(0, (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid));
+      }).fold<double>(
+        0,
+            (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid),
+      );
     });
 
     final labels = List.generate(daysInMonth, (i) => (i + 1).toString());
@@ -1698,7 +1985,9 @@ class HomePages extends StatelessWidget {
             labels,
             MedColors.green,
             isDark,
-            unit: isWorker ? "ta" : AppTranslations.get(context, "UZS"),
+            unit: isWorker
+                ? AppTranslations.get(context, "ta")
+                : AppTranslations.get(context, "UZS"),
           ),
         ),
       ),
@@ -1725,7 +2014,7 @@ class HomePages extends StatelessWidget {
 
       if (isWorker) {
         return finishedProductProvider.finishedProducts.where((item) {
-          final createdAt = item.createdAt;
+          final createdAt = item.createdAt?.toLocal();
           if (createdAt == null) return false;
           return (item.createdByName ?? "").trim().toLowerCase() == currentUserName &&
               createdAt.year == now.year &&
@@ -1734,17 +2023,29 @@ class HomePages extends StatelessWidget {
       }
 
       return orderProvider.orders.where((o) {
-        if (o.date.year != now.year || o.date.month != targetMonth) return false;
+        final localDate = o.date.toLocal();
+        if (localDate.year != now.year || localDate.month != targetMonth) return false;
         if (o.paymentStatus != "To'langan" && o.status != "Sotildi") return false;
         if (isAdmin) return true;
         final createdBy = o.createdBy;
         if (createdBy == null) return false;
-        return (createdBy["fullName"] ?? createdBy["full_name"] ?? "").toString().trim().toLowerCase() ==
+        return (createdBy["fullName"] ?? createdBy["full_name"] ?? "")
+            .toString()
+            .trim()
+            .toLowerCase() ==
             currentUserName;
-      }).fold<double>(0, (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid));
+      }).fold<double>(
+        0,
+            (sum, o) => sum + (o.status == "Sotildi" ? (o.price * o.quantity) : o.amountPaid),
+      );
     });
 
-    const labels = ["Yan", "Fev", "Mar", "Apr", "May", "Iyun", "Iyul", "Avg", "Sen", "Okt", "Noy", "Dek"];
+    const shortMonthsMap = {
+      "Uzb": ["Yan", "Fev", "Mar", "Apr", "May", "Iyn", "Iyl", "Avg", "Sen", "Okt", "Noy", "Dek"],
+      "Rus": ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+      "Kiril": ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+    };
+    final labels = shortMonthsMap[profileProvider.language] ?? shortMonthsMap["Uzb"]!;
 
     return _buildChartCard(
       context,
@@ -1753,15 +2054,22 @@ class HomePages extends StatelessWidget {
         context,
         data,
         labels,
-        MedColors.skyBlue,
+        isDark ? MedColors.skyBlue : MedColors.primaryBlue,
         isDark,
-        unit: isWorker ? "ta" : AppTranslations.get(context, "UZS"),
+        unit: isWorker
+            ? AppTranslations.get(context, "ta")
+            : AppTranslations.get(context, "UZS"),
       ),
       isDark: isDark,
     );
   }
 
-  Widget _buildChartCard(BuildContext context, {required String title, required Widget chart, required bool isDark}) {
+  Widget _buildChartCard(
+      BuildContext context, {
+        required String title,
+        required Widget chart,
+        required bool isDark,
+      }) {
     return Container(
       height: 310,
       padding: const EdgeInsets.all(18),
@@ -1775,7 +2083,7 @@ class HomePages extends StatelessWidget {
           BoxShadow(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.25)
-                : const Color(0xFF64748B).withValues(alpha: 0.05),
+                : const Color(0xFF0F172A).withValues(alpha: 0.05),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -1800,7 +2108,11 @@ class HomePages extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(Icons.auto_graph_rounded, size: 20, color: isDark ? Colors.white24 : Colors.black26),
+              Icon(
+                Icons.auto_graph_rounded,
+                size: 20,
+                color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -1844,7 +2156,7 @@ class HomePages extends StatelessWidget {
         lineTouchData: LineTouchData(
           enabled: true,
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => isDark ? const Color(0xFF0F172A) : Colors.white,
+            getTooltipColor: (_) => const Color(0xFF0F172A),
             tooltipRoundedRadius: 12,
             tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             tooltipMargin: 10,
@@ -1852,9 +2164,9 @@ class HomePages extends StatelessWidget {
               return touchedSpots.map((spot) {
                 return LineTooltipItem(
                   "${_formatMoney(spot.y)} $unit",
-                  TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    fontWeight: FontWeight.w900,
+                  const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
                     fontSize: 12.5,
                   ),
                 );
@@ -1876,7 +2188,7 @@ class HomePages extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 38,
+              reservedSize: 40,
               interval: maxVal / 3,
               getTitlesWidget: (value, meta) {
                 if (value < 0) return const SizedBox();
@@ -1886,7 +2198,7 @@ class HomePages extends StatelessWidget {
                   child: Text(
                     formatY(value),
                     style: TextStyle(
-                      color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                      color: isDark ? Colors.white54 : const Color(0xFF64748B),
                       fontSize: 10.5,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1909,7 +2221,7 @@ class HomePages extends StatelessWidget {
                     child: Text(
                       labels[idx],
                       style: TextStyle(
-                        color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                        color: isDark ? Colors.white60 : const Color(0xFF475569),
                         fontWeight: FontWeight.w700,
                         fontSize: labels.length > 7 ? 10 : 11.5,
                       ),
@@ -1950,7 +2262,7 @@ class HomePages extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  baseColor.withValues(alpha: isDark ? 0.35 : 0.25),
+                  baseColor.withValues(alpha: isDark ? 0.34 : 0.22),
                   baseColor.withValues(alpha: 0.0),
                 ],
               ),
@@ -1965,7 +2277,7 @@ class HomePages extends StatelessWidget {
       BuildContext context, {
         required Widget child,
         double borderRadius = 26,
-        double fontSize = 11,
+        double fontSize = 11.5,
       }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
@@ -1978,34 +2290,42 @@ class HomePages extends StatelessWidget {
               filter: ImageFilter.blur(sigmaX: 4.5, sigmaY: 4.5),
               child: Material(
                 color: isDark
-                    ? Colors.black.withValues(alpha: 0.60)
-                    : Colors.black.withValues(alpha: 0.35),
+                    ? Colors.black.withValues(alpha: 0.62)
+                    : const Color(0xFF0F172A).withValues(alpha: 0.48),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(borderRadius),
                   onTap: () => _showComingSoonSnackBar(context),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.16),
-                            shape: BoxShape.circle,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: isDark ? 0.14 : 0.28),
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(9),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.22),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.lock_rounded, color: Colors.white, size: 19),
                           ),
-                          child: const Icon(Icons.lock_rounded, color: Colors.white, size: 18),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          AppTranslations.get(context, "Tez orada"),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: fontSize,
-                            letterSpacing: 0.3,
+                          const SizedBox(height: 6),
+                          Text(
+                            AppTranslations.get(context, "Tez orada"),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: fontSize,
+                              letterSpacing: 0.3,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -2048,6 +2368,8 @@ class HomePages extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         final bool isDark = Theme.of(dialogContext).brightness == Brightness.dark;
+        final Color inputTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
+
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             return AlertDialog(
@@ -2055,7 +2377,9 @@ class HomePages extends StatelessWidget {
               surfaceTintColor: Colors.transparent,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(26),
-                side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                side: BorderSide(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                ),
               ),
               title: Center(
                 child: Text(
@@ -2063,7 +2387,7 @@ class HomePages extends StatelessWidget {
                       ? AppTranslations.get(dialogContext, "Yangi buyurtma")
                       : AppTranslations.get(dialogContext, "Buyurtmani tahrirlash"),
                   style: TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    color: inputTextColor,
                     fontWeight: FontWeight.w900,
                     fontSize: 19,
                   ),
@@ -2089,11 +2413,20 @@ class HomePages extends StatelessWidget {
                           return Align(
                             alignment: Alignment.topLeft,
                             child: Material(
-                              elevation: 4.0,
+                              elevation: 6.0,
                               color: isDark ? const Color(0xFF1E293B) : Colors.white,
                               borderRadius: BorderRadius.circular(14),
-                              child: SizedBox(
+                              clipBehavior: Clip.antiAlias,
+                              child: Container(
                                 width: 250,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFCBD5E1),
+                                  ),
+                                ),
                                 child: ListView.builder(
                                   padding: EdgeInsets.zero,
                                   shrinkWrap: true,
@@ -2103,7 +2436,7 @@ class HomePages extends StatelessWidget {
                                     return ListTile(
                                       title: Text(
                                         option.nomi,
-                                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                                        style: TextStyle(color: inputTextColor),
                                       ),
                                       onTap: () => onSelected(option),
                                     );
@@ -2118,8 +2451,11 @@ class HomePages extends StatelessWidget {
                           return TextFormField(
                             controller: controller,
                             focusNode: focusNode,
-                            style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                            decoration: _inputDecoration(AppTranslations.get(context, "Mahsulot nomi"), isDark),
+                            style: TextStyle(color: inputTextColor),
+                            decoration: _inputDecoration(
+                              AppTranslations.get(context, "Mahsulot nomi"),
+                              isDark,
+                            ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return AppTranslations.get(context, "Mahsulotni tanlang");
@@ -2137,13 +2473,18 @@ class HomePages extends StatelessWidget {
                       DropdownButtonFormField<String>(
                         initialValue: mijozTuri,
                         dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                        decoration: _inputDecoration(AppTranslations.get(dialogContext, "Mijoz turi"), isDark),
+                        style: TextStyle(color: inputTextColor),
+                        decoration: _inputDecoration(
+                          AppTranslations.get(dialogContext, "Mijoz turi"),
+                          isDark,
+                        ),
                         items: ["Doimiy mijoz", "Bemor"]
-                            .map((s) => DropdownMenuItem(
-                          value: s,
-                          child: Text(AppTranslations.get(dialogContext, s)),
-                        ))
+                            .map(
+                              (s) => DropdownMenuItem(
+                            value: s,
+                            child: Text(AppTranslations.get(dialogContext, s)),
+                          ),
+                        )
                             .toList(),
                         onChanged: (val) => setState(() => mijozTuri = val!),
                       ),
@@ -2153,9 +2494,13 @@ class HomePages extends StatelessWidget {
                         initialValue: TextEditingValue(text: customerController.text),
                         displayStringForOption: (m) => "${m.ism} ${m.familya}",
                         optionsBuilder: (textValue) {
-                          if (textValue.text.isEmpty) return const Iterable<MijozModel>.empty();
+                          if (textValue.text.isEmpty) {
+                            return const Iterable<MijozModel>.empty();
+                          }
                           return mijozProvider.mijozlar.where(
-                                (m) => "${m.ism} ${m.familya}".toLowerCase().contains(textValue.text.toLowerCase()),
+                                (m) => "${m.ism} ${m.familya}"
+                                .toLowerCase()
+                                .contains(textValue.text.toLowerCase()),
                           );
                         },
                         onSelected: (MijozModel selection) {
@@ -2166,16 +2511,25 @@ class HomePages extends StatelessWidget {
                           return TextFormField(
                             controller: controller,
                             focusNode: focusNode,
-                            style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                            decoration: _inputDecoration(AppTranslations.get(context, "Mijoz ismi"), isDark),
+                            style: TextStyle(color: inputTextColor),
+                            decoration: _inputDecoration(
+                              AppTranslations.get(context, "Mijoz ismi"),
+                              isDark,
+                            ),
                             onChanged: (val) => customerController.text = val,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return AppTranslations.get(context, "Mijoz ismini kiriting");
                               }
-                              if (!mijozProvider.mijozlar
-                                  .any((m) => "${m.ism} ${m.familya}".toLowerCase() == value.toLowerCase())) {
-                                return AppTranslations.get(context, "Bunday doimiy mijoz mavjud emas.");
+                              if (!mijozProvider.mijozlar.any(
+                                    (m) =>
+                                "${m.ism} ${m.familya}".toLowerCase() ==
+                                    value.toLowerCase(),
+                              )) {
+                                return AppTranslations.get(
+                                  context,
+                                  "Bunday doimiy mijoz mavjud emas.",
+                                );
                               }
                               return null;
                             },
@@ -2185,11 +2539,20 @@ class HomePages extends StatelessWidget {
                           return Align(
                             alignment: Alignment.topLeft,
                             child: Material(
-                              elevation: 4.0,
+                              elevation: 6.0,
                               color: isDark ? const Color(0xFF1E293B) : Colors.white,
                               borderRadius: BorderRadius.circular(14),
-                              child: SizedBox(
+                              clipBehavior: Clip.antiAlias,
+                              child: Container(
                                 width: 250,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFCBD5E1),
+                                  ),
+                                ),
                                 child: ListView.builder(
                                   padding: EdgeInsets.zero,
                                   shrinkWrap: true,
@@ -2199,7 +2562,7 @@ class HomePages extends StatelessWidget {
                                     return ListTile(
                                       title: Text(
                                         "${option.ism} ${option.familya}",
-                                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                                        style: TextStyle(color: inputTextColor),
                                       ),
                                       onTap: () => onSelected(option),
                                     );
@@ -2212,8 +2575,11 @@ class HomePages extends StatelessWidget {
                       )
                           : TextFormField(
                         controller: customerController,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                        decoration: _inputDecoration(AppTranslations.get(dialogContext, "Mijoz ismi"), isDark),
+                        style: TextStyle(color: inputTextColor),
+                        decoration: _inputDecoration(
+                          AppTranslations.get(dialogContext, "Mijoz ismi"),
+                          isDark,
+                        ),
                         validator: (value) => (value == null || value.isEmpty)
                             ? AppTranslations.get(dialogContext, "Mijoz ismini kiriting")
                             : null,
@@ -2221,9 +2587,11 @@ class HomePages extends StatelessWidget {
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: phoneController,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                        decoration:
-                        _inputDecoration(AppTranslations.get(dialogContext, "Telefon (90 123 45 67)"), isDark),
+                        style: TextStyle(color: inputTextColor),
+                        decoration: _inputDecoration(
+                          AppTranslations.get(dialogContext, "Telefon (90 123 45 67)"),
+                          isDark,
+                        ),
                         inputFormatters: [maskFormatter],
                         keyboardType: TextInputType.phone,
                         validator: (value) => (value == null || value.isEmpty)
@@ -2233,8 +2601,11 @@ class HomePages extends StatelessWidget {
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: quantityController,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                        decoration: _inputDecoration(AppTranslations.get(dialogContext, "Soni"), isDark),
+                        style: TextStyle(color: inputTextColor),
+                        decoration: _inputDecoration(
+                          AppTranslations.get(dialogContext, "Soni"),
+                          isDark,
+                        ),
                         keyboardType: TextInputType.number,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         validator: (value) {
@@ -2272,14 +2643,35 @@ class HomePages extends StatelessWidget {
                       TextFormField(
                         controller: localSanaController,
                         readOnly: true,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                        decoration: _inputDecoration(AppTranslations.get(dialogContext, "Sana"), isDark),
+                        style: TextStyle(color: inputTextColor),
+                        decoration: _inputDecoration(
+                          AppTranslations.get(dialogContext, "Sana"),
+                          isDark,
+                        ),
                         onTap: () async {
                           DateTime? picked = await showDatePicker(
                             context: dialogContext,
                             initialDate: order?.date ?? DateTime.now(),
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2101),
+                            builder: (pickerContext, child) {
+                              return Theme(
+                                data: isDark
+                                    ? ThemeData.dark().copyWith(
+                                  colorScheme: const ColorScheme.dark(
+                                    primary: MedColors.skyBlue,
+                                    surface: MedColors.cardDark,
+                                  ),
+                                )
+                                    : ThemeData.light().copyWith(
+                                  colorScheme: const ColorScheme.light(
+                                    primary: MedColors.primaryBlue,
+                                    surface: Colors.white,
+                                  ),
+                                ),
+                                child: child!,
+                              );
+                            },
                           );
                           if (picked != null) {
                             localSanaController.text = "${picked.day}.${picked.month}.${picked.year}";
@@ -2292,20 +2684,28 @@ class HomePages extends StatelessWidget {
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: commentController,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                        decoration: _inputDecoration(AppTranslations.get(dialogContext, "Izoh (ixtiyoriy)"), isDark),
+                        style: TextStyle(color: inputTextColor),
+                        decoration: _inputDecoration(
+                          AppTranslations.get(dialogContext, "Izoh (ixtiyoriy)"),
+                          isDark,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
                         initialValue: paymentStatus,
                         dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                        decoration: _inputDecoration(AppTranslations.get(dialogContext, "To'lov holati"), isDark),
+                        style: TextStyle(color: inputTextColor),
+                        decoration: _inputDecoration(
+                          AppTranslations.get(dialogContext, "To'lov holati"),
+                          isDark,
+                        ),
                         items: ["To'langan", "To'lanmagan"]
-                            .map((s) => DropdownMenuItem(
-                          value: s,
-                          child: Text(AppTranslations.get(dialogContext, s)),
-                        ))
+                            .map(
+                              (s) => DropdownMenuItem(
+                            value: s,
+                            child: Text(AppTranslations.get(dialogContext, s)),
+                          ),
+                        )
                             .toList(),
                         onChanged: (val) {
                           setState(() {
@@ -2320,9 +2720,11 @@ class HomePages extends StatelessWidget {
                         const SizedBox(height: 10),
                         TextFormField(
                           controller: amountPaidController,
-                          style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                          decoration:
-                          _inputDecoration(AppTranslations.get(dialogContext, "To'langan summa"), isDark),
+                          style: TextStyle(color: inputTextColor),
+                          decoration: _inputDecoration(
+                            AppTranslations.get(dialogContext, "To'langan summa"),
+                            isDark,
+                          ),
                           keyboardType: TextInputType.number,
                         ),
                       ],
@@ -2337,10 +2739,15 @@ class HomePages extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                          foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                          backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                          foregroundColor: isDark ? Colors.white70 : const Color(0xFF334155),
                           elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+                            ),
+                          ),
                         ),
                         onPressed: () => Navigator.pop(dialogContext),
                         child: Text(AppTranslations.get(dialogContext, "Bekor qilish")),
@@ -2436,6 +2843,7 @@ class HomePages extends StatelessWidget {
                               );
 
                               final messenger = ScaffoldMessenger.of(context);
+                              final errorPrefix = AppTranslations.get(dialogContext, "Xatolik yuz berdi");
                               showDialog(
                                 context: dialogContext,
                                 barrierDismissible: false,
@@ -2459,7 +2867,7 @@ class HomePages extends StatelessWidget {
                                   Navigator.pop(dialogContext);
                                 }
                                 messenger.showSnackBar(
-                                  SnackBar(content: Text("Xatolik yuz berdi: $error")),
+                                  SnackBar(content: Text("$errorPrefix: $error")),
                                 );
                               });
                               return;
@@ -2487,9 +2895,9 @@ class HomePages extends StatelessWidget {
   InputDecoration _inputDecoration(String label, bool isDark) {
     return InputDecoration(
       labelText: label,
-      labelStyle: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF64748B)),
+      labelStyle: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF475569)),
       filled: true,
-      fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+      fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
@@ -2500,7 +2908,15 @@ class HomePages extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: MedColors.primaryBlue),
+        borderSide: const BorderSide(color: MedColors.primaryBlue, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: MedColors.rose),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: MedColors.rose, width: 1.5),
       ),
     );
   }

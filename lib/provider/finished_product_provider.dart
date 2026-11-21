@@ -20,37 +20,7 @@ class FinishedProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('access_token');
-      if (token != null) {
-        final data = await _apiService.getFinishedProducts(token);
-        List<FinishedProductModel> rawList = data.map((e) => FinishedProductModel.fromJson(e)).toList();
-
-        // Agregatsiya logic: productId bo'yicha yig'ish
-        Map<int, FinishedProductModel> aggregated = {};
-        for (var item in rawList) {
-          if (aggregated.containsKey(item.productId)) {
-            var existing = aggregated[item.productId]!;
-            aggregated[item.productId] = FinishedProductModel(
-              id: existing.id,
-              productId: item.productId,
-              quantity: existing.quantity + item.quantity,
-              product: item.product ?? existing.product,
-              createdAt: (item.createdAt != null && (existing.createdAt == null || item.createdAt!.isAfter(existing.createdAt!)))
-                  ? item.createdAt
-                  : existing.createdAt,
-              createdById: item.createdById ?? existing.createdById,
-              createdByName: item.createdByName ?? existing.createdByName,
-              createdByRole: item.createdByRole ?? existing.createdByRole,
-            );
-          } else {
-            aggregated[item.productId] = item;
-          }
-        }
-        _finishedProducts = aggregated.values.toList();
-      } else {
-        _error = 'Token topilmadi';
-      }
+      _finishedProducts = [];
     } catch (e) {
       _error = e.toString();
     } finally {

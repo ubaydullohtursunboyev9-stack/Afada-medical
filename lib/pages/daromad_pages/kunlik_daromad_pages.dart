@@ -22,7 +22,6 @@ class _KunlikColors {
   static const Color skyBlue = Color(0xFF38BDF8);
   static const Color green = Color(0xFF10B981);
   static const Color amber = Color(0xFFF59E0B);
-  static const Color rose = Color(0xFFF43F5E);
   static const Color slateDark = Color(0xFF0B132B);
   static const Color cardDark = Color(0xFF1C2541);
   static const Color lightBg = Color(0xFFF8FAFC);

@@ -1,14 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:afada/model/ishchi_modeli.dart';
-import 'package:afada/provider/ishchilar_Provider/ishchilar_provider.dart';
 import 'package:afada/provider/profile_provider.dart';
 import 'package:afada/provider/finished_product_provider.dart';
 import 'package:afada/provider/order_provider.dart';
+
+import 'ishchi malumoti/ishchi_detal.dart';
 
 String _formatPhoneDisplay(String phone) {
   final digits = phone.replaceAll(RegExp(r'[^\d]'), '').trim();
@@ -900,22 +902,57 @@ class _IshchilarOylikDaromadPageesState
 
                                 return SizedBox(
                                   width: cardWidth,
-                                  child: _WorkerMonthlyCard(
-                                    ishchi: ishchi,
-                                    countValue: countValue,
-                                    metricLabel: getTxt(lang, titleKey),
-                                    unitLabel: getTxt(lang, "ta"),
-                                    phoneLabel: getTxt(lang, "tel"),
-                                    progress: progress,
-                                    isSeller: isSeller,
-                                    isDark: isDark,
-                                    cardBg: cardBg,
-                                    borderColor: borderColor,
-                                    textPrimary: textPrimary,
-                                    textSecondary: textSecondary,
-                                    onCallTap: ishchi.telefon.trim().isEmpty
-                                        ? null
-                                        : () => _makePhoneCall(ishchi.telefon),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(20),
+                                      onTap: () {
+                                        final isAdmin = profile.role.trim().toLowerCase() == "admin";
+                                        if (!isAdmin) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: const Row(
+                                                children: [
+                                                  Icon(Icons.lock_rounded, color: Colors.white, size: 18),
+                                                  SizedBox(width: 10),
+                                                  Text("Ushbu ma'lumot faqat Admin uchun mo'ljallangan"),
+                                                ],
+                                              ),
+                                              backgroundColor: const Color(0xFF1E293B),
+                                              behavior: SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        HapticFeedback.lightImpact();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => IshchiDetail(
+                                              ishchi: ishchi,
+                                              initialTabIndex: 1,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: _WorkerMonthlyCard(
+                                        ishchi: ishchi,
+                                        countValue: countValue,
+                                        metricLabel: getTxt(lang, titleKey),
+                                        unitLabel: getTxt(lang, "ta"),
+                                        phoneLabel: getTxt(lang, "tel"),
+                                        progress: progress,
+                                        isSeller: isSeller,
+                                        isDark: isDark,
+                                        cardBg: cardBg,
+                                        borderColor: borderColor,
+                                        textPrimary: textPrimary,
+                                        textSecondary: textSecondary,
+                                        onCallTap: ishchi.telefon.trim().isEmpty
+                                            ? null
+                                            : () => _makePhoneCall(ishchi.telefon),
+                                      ),
+                                    ),
                                   ),
                                 );
                               }).toList(),

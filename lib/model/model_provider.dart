@@ -33,7 +33,11 @@ class MahsulotProvider extends ChangeNotifier {
       final token = prefs.getString('access_token');
       if (token != null) {
         final data = await _apiService.getProducts(token);
-        MahsulotDatabase.mahsulotlar = data.map((e) => MahsulotModel.fromJson(e)).toList();
+        MahsulotDatabase.mahsulotlar = data.map((e) {
+          final m = MahsulotModel.fromJson(e);
+          m.zaxira = 0;
+          return m;
+        }).toList();
       }
     } catch (e) {
       debugPrint("Load Products Error: $e");
