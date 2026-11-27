@@ -9,6 +9,7 @@ import 'package:afada/model/ishchi_modeli.dart';
 import 'package:afada/provider/profile_provider.dart';
 import 'package:afada/provider/finished_product_provider.dart';
 import 'package:afada/provider/order_provider.dart';
+import 'package:afada/utils/error_utils.dart';
 
 import 'ishchi malumoti/ishchi_detal.dart';
 
@@ -818,7 +819,7 @@ class _IshchilarOylikDaromadPageesState
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  finishedProvider.error!,
+                                  getFriendlyErrorMessage(finishedProvider.error),
                                   style: TextStyle(
                                     color: isDark ? Colors.white : _rose,
                                     fontSize: 14.5,

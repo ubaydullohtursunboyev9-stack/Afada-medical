@@ -8,6 +8,7 @@ import 'package:afada/provider/profile_provider.dart';
 import '../model/finished_product_model.dart';
 import '../model/mahsulot_modeli.dart';
 import '../model/model_provider.dart';
+import 'package:afada/utils/error_utils.dart';
 import 'daromad_pages/Ishchilar/ishchi malumoti/ishchi_detal.dart';
 
 // ============================================================
@@ -1914,7 +1915,7 @@ class _AddProductDialogState extends State<_AddProductDialog> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            _errorText!,
+                            getFriendlyErrorMessage(_errorText),
                             style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w700,

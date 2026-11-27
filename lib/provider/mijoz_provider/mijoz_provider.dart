@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/mijoz_modeli.dart';
 import '../../service/api_service.dart';
 import '../../services/image_picker_service.dart';
+import 'package:afada/utils/error_utils.dart';
 
 class MijozProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -39,7 +40,7 @@ class MijozProvider extends ChangeNotifier {
       mijozlar = data.map((e) => MijozModel.fromJson(e)).toList();
 
     } catch (e) {
-      errorMessage = e.toString();
+      errorMessage = getFriendlyErrorMessage(e.toString());
     } finally {
       isLoading = false;
       notifyListeners();
@@ -83,7 +84,7 @@ class MijozProvider extends ChangeNotifier {
       
       tozalash();
     } catch (e) {
-      errorMessage = e.toString();
+      errorMessage = getFriendlyErrorMessage(e.toString());
     } finally {
       isLoading = false;
       notifyListeners();
@@ -102,7 +103,7 @@ class MijozProvider extends ChangeNotifier {
       mijozlar.removeWhere((m) => m.id == id);
 
     } catch (e) {
-      errorMessage = e.toString();
+      errorMessage = getFriendlyErrorMessage(e.toString());
     } finally {
       isLoading = false;
       notifyListeners();

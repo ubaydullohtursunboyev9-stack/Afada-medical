@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/ishchi_modeli.dart';
 import '../../services/image_picker_service.dart';
 import '../../service/api_service.dart';
+import 'package:afada/utils/error_utils.dart';
 
 class IshchiProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -128,7 +129,7 @@ class IshchiProvider extends ChangeNotifier {
 
       IshchiDatabase.ishchilar = List.from(ishchilar);
     } catch (e) {
-      error = e.toString();
+      error = getFriendlyErrorMessage(e.toString());
 
       await IshchiDatabase.loadIshchilar();
 
@@ -197,7 +198,7 @@ class IshchiProvider extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      error = e.toString();
+      error = getFriendlyErrorMessage(e.toString());
       return false;
     } finally {
       isLoading = false;
@@ -237,7 +238,7 @@ class IshchiProvider extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      error = e.toString();
+      error = getFriendlyErrorMessage(e.toString());
 
       return false;
     } finally {

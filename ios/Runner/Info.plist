@@ -26,6 +26,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Ilova mijozlar va mahsulotlar rasmini olish uchun kameradan foydalanadi.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ilova kameradan foydalanish uchun mikrofon ruxsatini talab qilishi mumkin.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Ilova galereyaga rasm saqlash uchun ruxsat so'raydi.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ilova galereyadan rasm tanlash uchun ruxsat so'raydi.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -56,23 +64,13 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>Ilova mijozlar va mahsulotlar rasmini olish uchun kameradan foydalanadi.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Ilova kameradan foydalanish uchun mikrofon ruxsatini talab qilishi mumkin.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Ilova galereyadan rasm tanlash uchun ruxsat so'raydi.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Ilova galereyaga rasm saqlash uchun ruxsat so'raydi.</string>
 </dict>
 </plist>

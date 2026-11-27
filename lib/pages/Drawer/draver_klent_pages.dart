@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../model/mijoz_modeli.dart';
 import '../../provider/mijoz_provider/mijoz_provider.dart';
 import '../../provider/profile_provider.dart';
+import 'package:afada/utils/error_utils.dart';
 
 class DraverKlentPages extends StatefulWidget {
   const DraverKlentPages({super.key});
@@ -687,7 +688,7 @@ class _DraverKlentPagesState extends State<DraverKlentPages> {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      provider.errorMessage!,
+                      getFriendlyErrorMessage(provider.errorMessage),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,

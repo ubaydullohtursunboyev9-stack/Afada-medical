@@ -9,6 +9,7 @@ import 'package:afada/model/ishchi_modeli.dart';
 import 'package:afada/provider/finished_product_provider.dart';
 import 'package:afada/provider/ishchilar_Provider/ishchilar_provider.dart';
 import 'package:afada/provider/order_provider.dart';
+import 'package:afada/utils/error_utils.dart';
 import 'package:afada/provider/profile_provider.dart';
 
 import 'ishchi malumoti/ishchi_detal.dart';
@@ -538,7 +539,7 @@ class _KunlikDaromadPagesState extends State<KunlikDaromadPages> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              error,
+              getFriendlyErrorMessage(error),
               style: const TextStyle(
                 color: _WorkerColors.rose,
                 fontSize: 14.5,

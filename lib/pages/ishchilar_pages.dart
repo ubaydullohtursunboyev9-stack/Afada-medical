@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:afada/provider/ishchilar_Provider/ishchilar_provider.dart';
+import 'package:afada/utils/error_utils.dart';
 import '../model/ishchi_modeli.dart';
 import '../provider/profile_provider.dart';
 
@@ -375,7 +376,7 @@ class _IshchilarPagesState extends State<IshchilarPages> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              error,
+              getFriendlyErrorMessage(error),
               style: const TextStyle(
                 color: _IshchiColors.rose,
                 fontSize: 14,
@@ -862,7 +863,7 @@ class _IshchilarPagesState extends State<IshchilarPages> {
                     if (errorText != null) ...[
                       const SizedBox(height: 12),
                       Text(
-                        errorText,
+                        getFriendlyErrorMessage(errorText),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: _IshchiColors.rose,

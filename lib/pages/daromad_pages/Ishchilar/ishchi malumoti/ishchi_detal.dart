@@ -11,6 +11,7 @@ import 'package:afada/model/ishchi_modeli.dart';
 import 'package:afada/provider/finished_product_provider.dart';
 import 'package:afada/provider/order_provider.dart';
 import 'package:afada/provider/profile_provider.dart';
+import 'package:afada/utils/error_utils.dart';
 
 // ============================================================
 // AFADA MEDICAL CLINICAL COLORS
@@ -1331,7 +1332,7 @@ class _IshchiDetailState extends State<IshchiDetail>
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              error,
+              getFriendlyErrorMessage(error),
               style: const TextStyle(
                 color: _DetailColors.rose,
                 fontSize: 14,
