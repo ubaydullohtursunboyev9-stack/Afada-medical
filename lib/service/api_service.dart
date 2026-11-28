@@ -45,6 +45,40 @@ class ApiService {
   }
 
   // =========================================================
+  // LOGIN VA PAROL ORQALI KIRISH
+  // POST /api/auth/login
+  // =========================================================
+  Future<Map<String, dynamic>> loginWithPassword({
+    required String login,
+    required String password,
+  }) async {
+    final url = Uri.parse('$baseUrl/auth/login');
+    final body = {
+      'login': login.trim(),
+      'password': password.trim(),
+    };
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    throw ApiException(
+      statusCode: response.statusCode,
+      message: 'Login yoki parol noto\'g\'ri',
+      body: response.body,
+    );
+  }
+
+  // =========================================================
   // OTP YUBORISH
   // POST /api/auth/send-code
   // =========================================================
